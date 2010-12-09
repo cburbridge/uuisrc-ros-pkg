@@ -1,0 +1,21 @@
+<package>
+  <description brief="libvicon">
+
+     Classes for Stream and Request-Reply TCP communications with 
+     a Vicon Motion Tracking System.
+
+  </description>
+  <author>Chris Burbridge</author>
+  <license>GPL</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/libvicon</url>
+  <depend package="roscpp"/>
+  <rosdep name="libxml2" />
+  <rosdep name="boost" />
+
+  <export>
+    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -libvicon"/>
+  </export>
+</package>
+
+

@@ -1,0 +1,9 @@
+<stack>
+  <description brief="vicon">Vicon motion tracking system interface stack</description>
+  <author>Chris Burbridge</author>
+  <license>GPL</license>  
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/vicon</url>
+  <depend stack="ros" />
+
+</stack>
