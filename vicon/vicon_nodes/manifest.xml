@@ -1,0 +1,22 @@
+<package>
+  <description brief="vicon_nodes">
+
+     vicon_nodes
+     
+     A collection of simple nodes that use libvicon
+
+  </description>
+  <author>Chris Burbridge</author>
+  <license>GPL</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/vicon_nodes</url>
+  <depend package="roscpp"/>
+  <depend package="libvicon"/>
+  <depend package="tf"/>
+  <depend package="visualization_msgs"/>
+  <rosdep name="libxml2" />
+  <rosdep name="boost" />
+
+</package>
+
+
