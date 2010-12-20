@@ -44,6 +44,7 @@ using namespace std;
 uint Counter = 0;
 int numOfIPoints;
 string ImgFilename;
+string gImageSubTopic;
 
 ros::Publisher features;
 
@@ -52,7 +53,7 @@ public:
 	ImageConverter(ros::NodeHandle &n) : n_(n), it_(n_)
 	{
 		cvNamedWindow("Image window");
-		image_sub_ = it_.subscribe("/camera_sim/image_raw", 1, &ImageConverter::imageCallback, this);
+		image_sub_ = it_.subscribe(gImageSubTopic.c_str(), 1, &ImageConverter::imageCallback, this);
 		//strSub = n.subscribe("/camera_sim/image_filename", 1, );
 		// numOfIPoints = 20;
 //		numOfIPoints = -1; // to publish all points
@@ -61,7 +62,7 @@ public:
 	ImageConverter(ros::NodeHandle &n, int numOfIPoints) : n_(n), it_(n_)
 	{
 		cvNamedWindow("Image window");
-		image_sub_ = it_.subscribe("/camera_sim/image_raw", 1, &ImageConverter::imageCallback, this);
+		image_sub_ = it_.subscribe(gImageSubTopic.c_str(), 1, &ImageConverter::imageCallback, this);
 		this->numOfIPoints = numOfIPoints;
 	}
 
@@ -404,9 +405,11 @@ int mainKmeans(void)
 int main(int argc, char *argv[])
 {
 	numOfIPoints = argc == 1 ? -1 : atoi(argv[1]);
+	// The following should be set from a command line option
+	gImageSubTopic.assign("/camera_sim/image_raw");
 	ros::init(argc, argv, "surf");
 	ros::NodeHandle n;
-	features = n.advertise<std_msgs::Float32MultiArray>("/features", 1000, true);
+	features = n.advertise<std_msgs::Float32MultiArray>("/vision/features", 1000, true);
 //	if (PROCEDURE == 1) return mainImage();
 //	else if (PROCEDURE == 2) return mainVideo();
 //	else if (PROCEDURE == 3) return mainMatch();
