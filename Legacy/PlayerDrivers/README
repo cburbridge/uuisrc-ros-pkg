@@ -1,0 +1,35 @@
+Legacy Player Drivers
+---------------------
+
+This directory contains Player/Stage drivers that have been created at the University of Ulster over the last few years. As legacy material, the usefulness of these drivers for the general robotics community is limited. However, we have placed them here on the off chance that somebody benefits from them.
+
+The drivers, although in a useable state, will require some effort on the part of the user in order to have operational. Each driver is provided with a compile.sh script which should
+compile the driver. However, the correct libraries will need to be installed. All of the vision drivers rely on open cv 1, while the vicon driver relies on libxml2. Please see the source code, and feel free to email the authors for further details.
+
+The drivers are as follows:
+
+
+DynamicWindowController
+-----------------------
+This driver implements the dynamic window controller approach to obstacle avoidance. It subscribes to Position2d messages from a client controller, and publishes Position2d messages to the robot base.
+
+ViconPosition
+-------------
+This driver provides a Position2d interface that exposes the true position of the robot within the external Vicon tracking system co-ordinate frame.
+
+Vision/CameraRotate
+-------------------
+This driver subscribes to a camera and a position2d, and published a new camera. The new camera is the same as the subscribed camera, but with the image rotated about the centre by the negative of the rotation of the robot. This proved useful when the camera is facing the ceiling, allowing rotation to be approximately removed from the image over short trajectories.
+
+Vision/CameraSimulator
+----------------------
+This driver subscribes to a position2d, and provides a camera. The image for the camera is extracted from a master image, thus allowing a very very simplistic simulation of an orthographic camera facing a ceiling.
+
+Vision/CameraUD
+---------------
+This driver subscribes to a camera, and provides an undistorted version of the image by removing the radial distortion. 
+
+Vision/FaceBlob
+---------------
+This driver subscribes to a camera and provides a blobfinder interface giving the location of human faces within the image. OpenCv is used to provide the face detection.
+
