@@ -1,0 +1,7 @@
+bin/
+build/
+*~
+msg/lisp/
+msg_gen/
+cmake_install.cmake
+src/SchunkRos/

@@ -1,0 +1,21 @@
+<package>
+  <description brief="person_grabber">
+
+Based on openni_tracker, but instead loggs the point cloud of the person.
+
+  </description>
+  <author>Chris Burbridge</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+
+
+  <depend package="roscpp"/>
+  <depend package="roslib"/>
+  <depend package="geometry_msgs"/>
+  <depend package="openni"/>
+  <depend package="kdl"/>
+  <depend package="tf"/>
+  <depend package="sensor_msgs" />
+  <depend package="message_filters" />
+  <depend package="pcl_ros" />
+</package>

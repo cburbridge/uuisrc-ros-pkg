@@ -1,0 +1,9 @@
+<stack>
+  <description brief="robots">ROS interface code for various robots</description>
+  <author>Chris Burbridge</author>
+  <license>GPL</license>  
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/vicon</url>
+  <depend stack="ros" />
+
+</stack>

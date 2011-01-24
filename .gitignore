@@ -2,7 +2,12 @@
 build/
 lib/
 bin/
+srv_gen/
+msg_gen/
 .project
 .pydevproject
 .cproject
 .DS_Store
+*.pyc
+*.dox
+

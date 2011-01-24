@@ -1,0 +1,425 @@
+<robot name="schunk">
+
+<link name="ScitosBase">
+   <visual>
+    <origin xyz="0 0 0.29" rpy="0 0 0" />
+    <geometry>
+      <cylinder radius="0.18" length="0.58" />
+    </geometry>
+    <material name="scitosblue">
+      <color rgba=".0 .0 .5 1" />
+    </material>
+  </visual>
+  
+</link>
+
+<link name="PAM112_BaseConector">
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <cylinder radius="0.045" length="0.055" />
+    </geometry>
+    <material name="gray">
+      <color rgba=".15 .15 .15 1" />
+    </material>
+  </visual>
+</link>
+
+<link name="P90_1_LowerCube">
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+     <box size="0.09 0.09 0.09" />
+    </geometry>
+    <material name="gray">
+      <color rgba=".65 .95 .65 1" />
+    </material>
+  </visual>
+</link>
+
+<link name="P90_1_UpperCube">
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+     <box size="0.09 0.09 0.09" />
+    </geometry>
+    <material name="gray">
+      <color rgba=".65 .95 .65 1" />
+    </material>
+  </visual>
+</link>
+
+<link name="PAM102">
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <cylinder radius="0.045" length="0.045" />
+    </geometry>
+    <material name="gray">
+      <color rgba=".15 .15 .15 1" />
+    </material>
+  </visual>
+</link>
+
+<link name="P90_2_LowerCube">
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+     <box size="0.09 0.09 0.09" />
+    </geometry>
+    <material name="gray">
+      <color rgba=".65 .95 .65 1" />
+    </material>
+  </visual>
+</link>
+
+<link name="P90_2_UpperCube">
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+     <box size="0.09 0.09 0.09" />
+    </geometry>
+    <material name="gray">
+      <color rgba=".65 .95 .65 1" />
+    </material>
+  </visual>
+</link>
+
+<link name="PAM121">
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <box size="0.048 0.0905 0.122 " />
+    </geometry>
+    <material name="gray">
+      <color rgba=".15 .15 .15 1" />
+    </material>
+  </visual>
+</link>
+
+
+<link name="P90_3_LowerCube">
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+     <box size="0.09 0.09 0.09" />
+    </geometry>
+    <material name="gray">
+      <color rgba=".65 .95 .65 1" />
+    </material>
+  </visual>
+</link>
+
+
+<link name="P90_3_UpperCube">
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+     <box size="0.09 0.09 0.09" />
+    </geometry>
+    <material name="gray">
+      <color rgba=".65 .95 .65 1" />
+    </material>
+  </visual>
+</link>
+
+
+<link name="PAM110">
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <cylinder radius="0.035" length="0.045" />
+    </geometry>
+    <material name="gray">
+      <color rgba=".15 .15 .15 1" />
+    </material>
+  </visual>
+</link>
+
+
+<link name="P70_1_LowerCube">
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+     <box size="0.07 0.07 0.07" />
+    </geometry>
+    <material name="gray">
+      <color rgba=".65 .95 .65 1" />
+    </material>
+  </visual>
+</link>
+
+<link name="P70_1_UpperCube">
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+     <box size="0.07 0.07 0.07" />
+    </geometry>
+    <material name="gray">
+      <color rgba=".65 .95 .65 1" />
+    </material>
+  </visual>
+</link>
+
+<link name="PAM120">
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <box size="0.007 0.0705 0.098 " />
+    </geometry>
+    <material name="grey">
+      <color rgba=".15 .15 .15 1" />
+    </material>
+  </visual>
+</link>
+
+<link name="P70_2_LowerCube">
+
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+     <box size="0.07 0.07 0.07" />
+    </geometry>
+    <material name="gray">
+      <color rgba=".65 .95 .65 1" />
+    </material>
+  </visual>
+</link>
+
+<link name="P70_2_UpperCube">
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+     <box size="0.07 0.07 0.07" />
+    </geometry>
+    <material name="gray">
+      <color rgba=".65 .95 .65 1" />
+    </material>
+  </visual>
+</link>
+
+<link name="PAM100">
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <cylinder radius="0.025" length="0.035" />
+    </geometry>
+    <material name="gray">
+      <color rgba=".15 .15 .15 1" />
+    </material>
+  </visual>
+</link>
+
+<!-- Now the extra 7dof modules parts -->
+<link name="PW70Hinge">
+	<visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+     <box size="0.017 0.107 0.07" />
+    </geometry>
+    <material name="gray">
+      <color rgba=".15 .15 .15 1" />
+    </material>
+  </visual>
+</link>
+
+<link name="PW70Box">
+	<visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+     <box size="0.07 0.093 0.1162" />
+    </geometry>
+    <material name="gray">
+      <color rgba=".15 .15 .15 1" />
+    </material>
+  </visual>
+</link>
+
+<link name="PW70Rotor">
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <cylinder radius="0.035" length="0.0377" />
+    </geometry>
+    <material name="gray">
+      <color rgba=".15 .15 .15 1" />
+    </material>
+  </visual>
+</link>
+
+<link name="GripperBox">
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+     <box size="0.07 0.093 0.10" /> <!--THIS IS NOT AS ACCURATE AS ALL THE REST!!!! -->
+    </geometry>
+    <material name="gray">
+      <color rgba=".15 .15 .15 1" />
+    </material>
+  </visual>
+</link>
+
+
+<link name="Camera">
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+     <box size="0.05 0.25 0.05" /> 
+    </geometry>
+    <material name="blue">
+      <color rgba=".0 .0 .9 1" />
+    </material>
+  </visual>
+</link>
+
+
+<!-- The joints -->
+
+ <joint name="Fixed_A" type="fixed">
+    <origin xyz="0 0 0.0725" rpy="0 0 0"/>
+    <parent link="PAM112_BaseConector"/>
+    <child link="P90_1_LowerCube"/>
+ </joint>
+
+
+ <joint name="Joint0" type="revolute">
+    <origin xyz="0 0 0.09" rpy="0 0 0"/>
+    <parent link="P90_1_LowerCube"/>
+    <child link="P90_1_UpperCube"/>
+    <limit lower="-3.141" upper="3.141" effort="2" velocity="2.6" />
+    <axis xyz="0 0 1" />
+ </joint>
+ 
+ <joint name="Fixed_B" type="fixed">
+    <origin xyz="0 0 0.0675" rpy="0 0 0"/>
+    <parent link="P90_1_UpperCube"/>
+    <child link="PAM102"/>
+ </joint>
+ 
+  <joint name="Fixed_C" type="fixed">
+    <origin xyz="0 0 0.0675" rpy="0 0 0"/>
+    <parent link="PAM102"/>
+    <child link="P90_2_LowerCube"/>
+ </joint>
+
+
+ <joint name="Joint1" type="revolute">
+    <origin xyz="0 0.09 0" rpy="0 0 0"/>
+    <parent link="P90_2_LowerCube"/>
+    <child link="P90_2_UpperCube"/>
+    <limit lower="-2.006" upper="2.006" effort="2" velocity="2.6" />
+    <axis xyz="0 1 0" />
+ </joint>
+ 
+ <joint name="Fixed_D" type="fixed">
+    <origin xyz="0 -0.00025 0.106" rpy="0 0 0"/>
+    <parent link="P90_2_UpperCube"/>
+    <child link="PAM121"/>
+ </joint>
+ 
+ <joint name="Fixed_E" type="fixed">
+    <origin xyz="0 -0.09025 0.016" rpy="0 0 0"/>
+    <parent link="PAM121"/>
+    <child link="P90_3_LowerCube"/>
+ </joint>
+ 
+ <joint name="Joint2" type="revolute">
+    <origin xyz="0 0 0.09 " rpy="0 0 0"/>
+    <parent link="P90_3_LowerCube"/>
+    <child link="P90_3_UpperCube"/>
+    <limit lower="-2.8" upper="2.8" effort="2" velocity="2.6" />
+    <axis xyz="0 0 1" />
+ </joint>
+ 
+ <joint name="Fixed_F" type="fixed">
+    <origin xyz="0 0 0.0675" rpy="0 0 0"/>
+    <parent link="P90_3_UpperCube"/>
+    <child link="PAM110"/>
+ </joint>
+ 
+ 
+ <joint name="Fixed_G" type="fixed">
+    <origin xyz="0 0 0.0575" rpy="0 0 0"/>
+    <parent link="PAM110"/>
+    <child link="P70_1_LowerCube"/>
+ </joint>
+ 
+<joint name="Joint3" type="revolute">
+    <origin xyz="0 -0.07 0 " rpy="0 0 0"/>
+    <parent link="P70_1_LowerCube"/>
+    <child link="P70_1_UpperCube"/>
+    <limit lower="-2.007" upper="2.007" effort="2" velocity="2.6" />
+    <axis xyz="0 -1 0" />
+ </joint>
+ 
+ <joint name="Fixed_H" type="fixed">
+    <origin xyz="0 -0.00025 0.084" rpy="0 0 0"/>
+    <parent link="P70_1_UpperCube"/>
+    <child link="PAM120"/>
+ </joint>
+ 
+ <joint name="Fixed_I" type="fixed">
+    <origin xyz="0 0.07025 0.014" rpy="0 0 0"/>
+    <parent link="PAM120"/>
+    <child link="P70_2_LowerCube"/>
+ </joint>
+ 
+
+ <joint name="Joint4" type="revolute">
+    <origin xyz="0  0 0.07" rpy="0 0 0"/>
+    <parent link="P70_2_LowerCube"/>
+    <child link="P70_2_UpperCube"/>
+    <limit lower="-2.80" upper="2.80" effort="2" velocity="2.6" />
+    <axis xyz="0 0 1" />
+ </joint>
+ 
+ <joint name="Fixed_J" type="fixed">
+    <origin xyz="0 0 0.0525" rpy="0 0 0"/>
+    <parent link="P70_2_UpperCube"/>
+    <child link="PAM100"/>
+ </joint>
+ 
+ <!-- The extra 7dof joints -->
+ <joint name="Fixed_K" type="fixed">
+    <origin xyz="0 0 0.0525" rpy="0 0 0"/>
+    <parent link="PAM100"/>
+    <child link="PW70Hinge"/>
+ </joint>
+ <joint name="Joint5" type="revolute">
+    <origin xyz="0 0 0.035" rpy="0 0 0"/>
+    <parent link="PW70Hinge"/>
+    <child link="PW70Box"/>
+    <limit lower="-1.900000" upper="1.90" effort="2" velocity="2.6" />
+    <axis xyz="0 -1 0" />
+ </joint>
+ <joint name="Joint6" type="revolute">
+    <origin xyz="0 0 0.07695" rpy="0 0 0"/>
+    <parent link="PW70Box"/>
+    <child link="PW70Rotor"/>
+    <limit lower="-3.00000" upper="3.0" effort="2" velocity="2.6" />
+    <axis xyz="0 0 1" />
+ </joint>
+ <joint name="Fixed_N" type="fixed">
+    <origin xyz="0 0 0.06885" rpy="0 0 0"/>
+    <parent link="PW70Rotor"/>
+    <child link="GripperBox"/>
+ </joint>
+
+ <joint name="Fixed_Cam" type="fixed">
+    <origin xyz="0.10  0.00  0.03" 
+    rpy="0 -1.57 3.14159265358979323846"
+    />
+    <parent link="GripperBox"/>
+    <child link="Camera"/>
+ </joint>
+
+
+ <joint name="Fixed_Base" type="fixed">
+    <origin xyz="0 0  0.6075"
+    rpy="0 0 3.14159265358979323846"
+    />
+    <parent link="ScitosBase"/>
+    <child link="PAM112_BaseConector"/>
+ </joint>
+
+</robot>
