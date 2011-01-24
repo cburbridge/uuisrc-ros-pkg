@@ -1,0 +1,18 @@
+<package>
+  <description brief="arm_track">
+
+     arm_track
+
+  </description>
+  <author>Lorenzo</author>
+  <license>GPL</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/arm_track</url>
+  <depend package="SchunkRos"/>
+  <depend package="roscpp"/>
+  <depend package="bullet"/>
+  <depend package="schunk_kinematics"/>
+
+</package>
+
+
