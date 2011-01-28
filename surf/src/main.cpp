@@ -95,6 +95,7 @@ public:
 		surfDetDes(img, ipts, false, 5, 4, 2, 0.0004f); // default value is 0.0004f
 		// publish the data to the node
 		publishDescriptors(this->numOfIPoints, &features, &ipts);
+		save_descriptors_to_file(&ipts);
 		//publishFilename;
 		// -- to here
 

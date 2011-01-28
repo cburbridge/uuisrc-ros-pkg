@@ -11,6 +11,7 @@
 
 #include <highgui.h>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <time.h>
 
@@ -351,37 +352,54 @@ void loadSurf(char *filename, vector<Ipoint> &ipts)
 }
 
 //-------------------------------------------------------
-
 //-------------------------------------------------------
-void printDescriptors(IpVec* ipts)
+
+int file_exists(char *filename)
 {
+	std::ifstream fp(filename, ifstream::in);
+	if (fp) {
+		fp.close();
+		return 1;
+	}
+	return 0 ;
+}
+
+
+void save_descriptors_to_file(IpVec* ipts)
+{
+	if (file_exists("/home/yianni/temp/siddique_data/output.txt")) {
+		return;
+	}
 	std::ofstream fp;
-	fp.open ("output.txt");
+	fp.open ("/home/yianni/temp/siddique_data/output.txt");
 	if (fp.is_open()) {
-		fp << "Total size: " << ipts->size() << std::endl;
-		fp << "\tx\ty\tscale\torientation\tlaplacian\tdx\tdy\tclusterIndex\thessian" << std::endl;
+		fp << fixed;
+//		fp << "Total size: " << ipts->size() << std::endl;
+//		fp << "\tx\ty\tscale\torientation\tlaplacian\tdx\tdy\tclusterIndex\thessian" << std::endl;
 		for (unsigned int i = 0; i < ipts->size(); i++) {
 			//		for (int i = 0; i < 2; i++) {
-			fp << i + 1 << ")\t" \
-					<< round(ipts->at(i).x) << "\t" \
-					<< round(ipts->at(i).y) << "\t" \
-					<< round(ipts->at(i).scale) << "\t" \
-					<< round(ipts->at(i).orientation) << "\t\t" \
-					<< ipts->at(i).laplacian << "\t\t" \
-					<< round(ipts->at(i).dx) << "\t" \
-					<< round(ipts->at(i).dy) << "\t" \
-					<< ipts->at(i).clusterIndex << "\t" \
-					<< ipts->at(i).hessian << "\t" \
-					<< std::endl;
+//			fp << i + 1 << ")\t" \
+//					<< round(ipts->at(i).x) << "\t" \
+//					<< round(ipts->at(i).y) << "\t" \
+//					<< round(ipts->at(i).scale) << "\t" \
+//					<< round(ipts->at(i).orientation) << "\t\t" \
+//					<< ipts->at(i).laplacian << "\t\t" \
+//					<< round(ipts->at(i).dx) << "\t" \
+//					<< round(ipts->at(i).dy) << "\t" \
+//					<< ipts->at(i).clusterIndex << "\t" \
+//					<< ipts->at(i).hessian << "\t" \
+//					<< std::endl;
 			//			fp << "\t";
-			//			for (int j = 0; j < 64; j++) {
-			//				fp << ipts->at(i).descriptor[j] << "  ";
-			//				if (ipts->at(i).descriptor[j] < min)
-			//					min = ipts->at(i).descriptor[j];
-			//				if (ipts->at(i).descriptor[j] > max)
-			//					max = ipts->at(i).descriptor[j];
-			//			}
-			//			fp << std::endl;
+			for (int j = 0; j < 64; j++) {
+				fp << setprecision(4) << ipts->at(i).descriptor[j];
+				if (j < 63)
+					fp << ",";
+//				if (ipts->at(i).descriptor[j] < min)
+//					min = ipts->at(i).descriptor[j];
+//				if (ipts->at(i).descriptor[j] > max)
+//					max = ipts->at(i).descriptor[j];
+			}
+			fp << std::endl;
 		}
 	} else
 		std::cout << "Unable to open file" << std::endl;

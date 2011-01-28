@@ -63,7 +63,9 @@ inline int fRound(float flt)
   return (int) floor(flt+0.5f);
 }
 
-void printDescriptors(std::vector<Ipoint> &ipts);
+//void printDescriptors(std::vector<Ipoint> &ipts);
+int file_exists(char *filename);
+void save_descriptors_to_file(IpVec* ipts);
 void publishDescriptors(const int numOfIPointsTotal, ros::Publisher* features, IpVec* ipts);
 void foo();
 
