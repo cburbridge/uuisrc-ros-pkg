@@ -1,0 +1,11 @@
+string  jointName
+float32 current
+uint8 errorCode
+bool referenced
+bool moving
+bool progMode
+bool warning
+bool error 
+bool brake
+bool moveEnd
+bool posReached

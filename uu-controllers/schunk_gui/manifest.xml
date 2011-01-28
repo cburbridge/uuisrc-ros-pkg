@@ -1,0 +1,16 @@
+<package>
+  <description brief="A gui for the manipulator">
+	A node for displaying the SCHUNK status flags, and allowing slider control of the joint velocities / positions.
+  </description>
+  <author>Chris Burbridge</author>
+  <license>GPL</license>
+  <review status="unreviewed" notes=""/>
+
+  <depend package="rospy" />
+  <depend package="SchunkRos" />
+  <depend package="sensor_msgs" />
+  <rosdep name="wxpython" />
+
+</package>
+
+

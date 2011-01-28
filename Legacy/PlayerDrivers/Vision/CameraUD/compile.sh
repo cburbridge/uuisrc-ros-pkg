@@ -1,0 +1,1 @@
+g++ *.cpp -I/usr/include/player-2.1 -L../../../opencv -lallcv  -lplayerdrivers -lplayercore -lpthread -lplayererror  -lpng -ljpeg `pkg-config --libs gtk+-2.0` -lgthread-2.0 -fPIC -shared -o libcamerauw.so

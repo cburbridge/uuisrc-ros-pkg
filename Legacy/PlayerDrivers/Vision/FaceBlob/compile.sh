@@ -1,0 +1,1 @@
+g++ -g3 facedetect.cpp -I/usr/local/include/opencv -I/usr/include/player-2.1  -lcxcore -lcv -lhighgui -lcvaux -lml -lplayerdrivers -lplayercore -lltdl -lpthread -lplayererror   -fPIC -shared -o libfacedetect.so

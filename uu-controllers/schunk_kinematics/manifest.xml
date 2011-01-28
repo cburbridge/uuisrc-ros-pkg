@@ -1,0 +1,24 @@
+<package>
+  <description brief="schunk_kinematics">
+
+     Schunk arm kinematics
+     
+     This is essentially David Lu's kinematics node with the addition of 
+     inverse velocity kinematics.
+
+  </description>
+  <author>David Lu!! // Chris Burbridge</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <depend package="roscpp"/>
+  <depend package="tf"/>
+  <depend package="sensor_msgs"/>
+  <depend package="tf_conversions"/>
+  <depend package="kdl_parser"/>
+  <depend package="kinematics_msgs"/>
+  <depend package="geometry_msgs"/>
+  <depend package="motion_planning_msgs"/>
+
+</package>
+
+

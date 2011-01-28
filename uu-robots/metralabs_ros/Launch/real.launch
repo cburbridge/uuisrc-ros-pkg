@@ -1,0 +1,17 @@
+<launch>
+    <param name="schunk_description" command="cat $(find metralabs_ros)/Models/model.xml" />
+    
+	
+    <!-- Robot state publisher: publishes tf information regarding the 
+          position of the arm -->
+    <node pkg="robot_state_publisher" type="state_publisher"
+	       name="schunk_state_publisher_pos">      
+        <remap from="robot_description" to="schunk_description"/>
+        <remap from="joint_states" to="/schunk/position/joint_states" />
+        <param name="publish_frequency" type="double" value="30.0" />
+        <param name="tf_prefix" type="string" value="/schunk/position" />
+    </node>
+	
+	<!-- Finally, start the Schunk node -->
+	<node name="metralabs_ros" pkg="metralabs_ros" type="ScitosServer" output="screen" />
+</launch>

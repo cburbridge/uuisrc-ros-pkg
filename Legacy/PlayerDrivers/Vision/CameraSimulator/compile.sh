@@ -1,0 +1,1 @@
+g++ *.cpp ../../../Util/Timer.cpp  -I/usr/local/include/player-2.1 -I/usr/include/player-2.1 -L../../../Libs/opencv -lallcv  -lplayerdrivers -lplayercore -lpthread -lplayererror  -lpng -ljpeg `pkg-config --libs gtk+-2.0` -lgthread-2.0 -fPIC -shared -o libcamerasimulator.so

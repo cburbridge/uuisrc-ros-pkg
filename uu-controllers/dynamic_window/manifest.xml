@@ -1,0 +1,20 @@
+<package>
+  <description brief="dynamic_window">
+
+     Dynamic window controller
+
+  </description>
+  <author>Lorenzo</author>
+  <license>GNU</license>
+  <review status="unreviewed" notes=""/>
+  <depend package="roscpp"/>
+  <depend package="sensor_msgs"/>
+  <depend package="std_msgs"/>
+  <depend package="nav_msgs"/>
+  <depend package="geometry_msgs"/>
+  <depend package="laser_geometry"/>
+  <depend package="pcl"/>
+
+</package>
+
+

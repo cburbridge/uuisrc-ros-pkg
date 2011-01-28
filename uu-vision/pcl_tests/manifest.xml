@@ -1,0 +1,21 @@
+<package>
+  <description brief="pcl_tests">
+
+     pcl_tests - some simple tests for saving point clouds
+
+  </description>
+  <author>Lorenzo</author>
+  <license>GPL</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/pcl_tests</url>
+  <depend package="pcl"/>
+  <depend package="roscpp"/>
+  <depend package="pcl_ros"/>
+  <depend package="pcl_visualization"/>
+  <depend package="tf"/>
+  <depend package="sensor_msgs"/>
+
+</package>
+
+
+

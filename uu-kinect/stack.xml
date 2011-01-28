@@ -1,0 +1,9 @@
+<stack>
+  <description brief="A stack of UU kinect bits.">Code that uses the Microsoft Kinect RGB-D Camera.</description>
+  <author>Chris Burbridge</author>
+  <license>GPL</license>  
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/uu-kinect</url>
+  <depend stack="ros" />
+
+</stack>

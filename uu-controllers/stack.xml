@@ -1,0 +1,8 @@
+<stack>
+  <description brief="Robot controllers">Various controllers for robots</description>
+  <author>Chris Burbridge and Lorenzo Riano</author>
+  <license>GPL</license>  
+  <review status="unreviewed" notes=""/>
+  <depend stack="ros" />
+
+</stack>
