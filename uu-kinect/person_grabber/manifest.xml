@@ -1,11 +1,15 @@
 <package>
   <description brief="person_grabber">
 
-Based on openni_tracker, but instead loggs the point cloud of the person.
+    This node integrates the the NITE skeleton tracking library with the openni_camera point cloud generation. A pointcloud is published, containing only the points that belong to the currently tracked human. (Actually, I did not try, but maybe a large monkey would also work..) 
+    
+    Upon starting the node ("rosrun person_grabber person_grabber"), nothing will be published. After standing in front of the camera, and calibrating in the usual Y shaped position, the pointcloud will start. The console informs of the current status of the tracking, and only one user is tracked and published at a time.
+    
+    The point cloud is of type PointCloud2, contains X, Y, Z and RGB values, and is on the topic "/rgbd/points2". The code for calculating the 3D positions of the points is taken from the openni_camera node, but stripped of the PrimeSense development kit camera parts. As such, it will only operate with a Microsoft Kinect camera.
 
   </description>
   <author>Chris Burbridge</author>
-  <license>BSD</license>
+  <license>GPL</license>
   <review status="unreviewed" notes=""/>
 
 

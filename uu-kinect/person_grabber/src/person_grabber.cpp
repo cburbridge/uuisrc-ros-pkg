@@ -1,4 +1,28 @@
-//@todo This is really annoying me!
+/**     Person Grabber
+ *
+ *  This node publishes a pointcloud of points corresponding to a user. The skeleton tracking
+ *  library provides the person extraction. Only the points for one user are published, multiple
+ *  users are not currently tracked.
+ *
+ *  A lot of this code is borrowed from openni_camera, and openni_tracker. 
+ *
+ *  ---------------------------------------------------------------------
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *  ---------------------------------------------------------------------
+ *
+**/
+//@todo This is really annoying me! 32-bit? Not sure....
 #define EIGEN_DONT_VECTORIZE
 #define EIGEN_DISABLE_UNALIGNED_ARRAY_ASSERT
 
@@ -64,6 +88,7 @@ void XN_CALLBACK_TYPE UserCalibration_CalibrationEnd(xn::SkeletonCapability& cap
 #define WAVG4(a,b,c,d,x,y)  ( ( ((int)(a) + (int)(b)) * (int)(x) + ((int)(c) + (int)(d)) * (int)(y) ) / ( 2 * ((int)(x) + (int(y))) ) )
 
 
+// The main class 
 
 class PersonGrabber {
 public:
@@ -100,6 +125,9 @@ public:
 
 	static const double rgb_focal_length_VGA_ = 525;
 
+    // The subsampling ratio of the point cloud
+    // This is necessary as too much data was being published, and a low powered PC cant keep up with both tracking
+    // and publishing...
 	static const uint subsample = 8;
 
 	int userId;
@@ -108,7 +136,7 @@ public:
 	string frame_points;
 public:
 
-
+    // The frame_id for publishing is set here as "/rgbd". 
 	PersonGrabber(ros::NodeHandle &nodeHandle) : nh(nodeHandle), frame_id("/rgbd"), frame_points("/rgbd") {
 		bNeedPose=FALSE;
 
@@ -135,7 +163,7 @@ public:
 		 XnDouble pixel_size;
 		// Read parameters from the camera
 		if (depth_generator.GetRealProperty ("ZPPS", pixel_size) != XN_STATUS_OK)
-			ROS_ERROR ("[OpenNIDriver] Could not read pixel size!");
+			ROS_ERROR ("[person_grabber] Could not read pixel size!");
 
 		// pixel size @ VGA = pixel size @ SXGA x 2
 		pixel_size *= 2.0;
@@ -143,10 +171,10 @@ public:
 		// focal length of IR camera in pixels for VGA resolution
 		XnUInt64 depth_focal_length_VGA;
 		if (depth_generator.GetIntProperty ("ZPD", depth_focal_length_VGA) != XN_STATUS_OK)
-			ROS_ERROR ("[OpenNIDriver] Could not read virtual plane distance!");
+			ROS_ERROR ("[person_grabber] Could not read virtual plane distance!");
 
 		if (depth_generator.GetRealProperty ("LDDIS", baseline_) != XN_STATUS_OK)
-			ROS_ERROR ("[OpenNIDriver] Could not read base line!");
+			ROS_ERROR ("[person_grabber] Could not read base line!");
 
 		// baseline from cm -> meters
 		baseline_ *= 0.01;
@@ -155,10 +183,10 @@ public:
 		depth_focal_length_VGA_ = (double)depth_focal_length_VGA/pixel_size;
 
 		if (depth_generator.GetIntProperty ("ShadowValue", shadow_value_) != XN_STATUS_OK)
-			ROS_WARN ("[OpenNIDriver] Could not read shadow value!");
+			ROS_WARN ("[person_grabber] Could not read shadow value!");
 
 		if (depth_generator.GetIntProperty ("NoSampleValue", no_sample_value_) != XN_STATUS_OK)
-			ROS_WARN ("[OpenNIDriver] Could not read no sample value!");
+			ROS_WARN ("[person_grabber] Could not read no sample value!");
 
 
 
@@ -209,7 +237,7 @@ public:
 
 			if (rc != XN_STATUS_OK)
 			{
-				ROS_ERROR ("[OpenNIDriver] Failed to create ImageGenerator: %s", xnGetStatusString (rc));
+				ROS_ERROR ("[person_grabber] Failed to create ImageGenerator: %s", xnGetStatusString (rc));
 			}
 		}
 		XnMapOutputMode mode;
@@ -218,31 +246,31 @@ public:
 		mode.nFPS  = 30;
 		if (image_generator.SetMapOutputMode (mode) != XN_STATUS_OK)
 		{
-			ROS_ERROR("[OpenNIDriver] Failed to set image output mode");
+			ROS_ERROR("[person_grabber] Failed to set image output mode");
 		}
 
 		// Set up the Kinect ( no PrimeSense :-( )
 		// InputFormat should be 6 = uncompressed Bayer for Kinect
 		if (image_generator.SetIntProperty ("InputFormat", 6) != XN_STATUS_OK)
-			ROS_ERROR ("[OpenNIDriver] Error setting the image input format to Uncompressed 8-bit BAYER!");
+			ROS_ERROR ("[person_grabber] Error setting the image input format to Uncompressed 8-bit BAYER!");
 
 		// RegistrationType should be 2 (software) for Kinect, 1 (hardware) for PS
 		if (depth_generator.SetIntProperty ("RegistrationType", 2) != XN_STATUS_OK)
-			ROS_WARN ("[OpenNIDriver] Error enabling registration!");
+			ROS_WARN ("[person_grabber] Error enabling registration!");
 
 		// Grayscale: bypass debayering -> gives us bayer pattern!
 		if (image_generator.SetPixelFormat(XN_PIXEL_FORMAT_GRAYSCALE_8_BIT )!= XN_STATUS_OK)
 		{
-			ROS_ERROR("[OpenNIDriver] Failed to set image pixel format to 8bit-grayscale");
+			ROS_ERROR("[person_grabber] Failed to set image pixel format to 8bit-grayscale");
 		}
 
 		rc = depth_generator.GetAlternativeViewPointCap().SetViewPoint( image_generator );
 		if (rc != XN_STATUS_OK)
 		{
-			ROS_ERROR ("[OpenNIDriver::spin] Error in switching on depth stream registration: %s", xnGetStatusString (rc));
+			ROS_ERROR ("[person_grabber::spin] Error in switching on depth stream registration: %s", xnGetStatusString (rc));
 		}
 
-		cloud2_.header.frame_id = frame_points; //"/rgbd"; // this should be the same as frame_id, but its not.
+		cloud2_.header.frame_id = frame_points; 
 		cloud2_.height = XN_VGA_Y_RES / subsample;
 		cloud2_.width  = XN_VGA_X_RES / subsample;
 		cloud2_.fields.resize( 4 );
@@ -770,27 +798,9 @@ public:
 		while (ros::ok()) {
 			rc = depth_generator.GetAlternativeViewPointCap().SetViewPoint( image_generator );
 			if (rc != XN_STATUS_OK)		{
-				ROS_ERROR ("[OpenNIDriver::spin] Error in switching on depth stream registration: %s", xnGetStatusString (rc));
+				ROS_ERROR ("[person_grabber::spin] Error in switching on depth stream registration: %s", xnGetStatusString (rc));
 				return;
 			}
-
-
-		    // See if new data is available
-//		    if (depth_generator.IsNewDataAvailable())
-//		    {
-//		      /// @todo Maybe take ROS time here and have more accurate offset
-//		      depth_generator.WaitAndUpdateData(); // non-blocking
-//		      processDepth();
-//		    }
-//		    if (image_generator.IsNewDataAvailable())
-//		    {
-//		      image_generator.WaitAndUpdateData(); // non-blocking
-////		      processRgb();
-//		    }
-//		    if (user_generator.IsNewDataAvailable()) {
-//		    	user_generator.WaitAndUpdateData();
-//		    	processUsers();
-//		    }
 
 			context.WaitAndUpdateAll();
 			if (depth_generator.IsDataNew())
@@ -801,21 +811,6 @@ public:
 				processUsers();
 				publishTransforms();
 			}
-
-			// Get the points associated with the person
-//			xn::SceneMetaData sceneMD;
-//			xn::DepthMetaData depthMD;
-//			depth_generator.GetMetaData(depthMD);
-//
-//			depth_generator.GetMetaData(depthMD);
-//			user_generator.GetUserPixels(0, sceneMD);
-
-
-	//		printf("Scene size apparanty = %d X %d\n", sceneMD.FullXRes(),sceneMD.FullYRes());
-	//		printf("sceneMD.DataSize()=%d; (640*480)=%d\n",sceneMD.DataSize()/sizeof(XnLabel),640*480);
-
-
-
 
 			r.sleep();
 		}
@@ -986,7 +981,7 @@ void XN_CALLBACK_TYPE UserPose_PoseDetected(xn::PoseDetectionCapability& capabil
 
 
 int main(int argc, char **argv) {
-    ros::init(argc, argv, "openni_tracker");
+    ros::init(argc, argv, "person_grabber");
     ros::NodeHandle nh;
 
     PersonGrabber pg(nh);
