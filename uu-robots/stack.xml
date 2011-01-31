@@ -3,7 +3,6 @@
   <author>Chris Burbridge</author>
   <license>GPL</license>  
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/vicon</url>
   <depend stack="ros" />
 
 </stack>

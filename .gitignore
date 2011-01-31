@@ -10,4 +10,5 @@ msg_gen/
 .DS_Store
 *.pyc
 *.dox
+*.o
 

@@ -1,10 +1,13 @@
 <package>
   <description brief="dynamic_window">
 
-     Dynamic window controller
+     Dynamic window controller. For more details see      
+
+"Fox, D.; Burgard, W.; Thrun, S., "The dynamic window approach to collision avoidance" Robotics and Automation Magazine, IEEE , vol.4, no.1, pp.23-33, Mar 1997"
+
 
   </description>
-  <author>Lorenzo</author>
+  <author>"Lorenzo Riano (lorenzo.riano@gmail.com)" </author>
   <license>GNU</license>
   <review status="unreviewed" notes=""/>
   <depend package="roscpp"/>

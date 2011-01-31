@@ -13,6 +13,7 @@
 
 const char* laser_topic = "base_scan";
 const char* base_tf = "base_link";
+bool debug_publish = false;
 
 class PoseReceiver {
     public:
@@ -62,24 +63,23 @@ class LaserScanReceiver {
 	    laser_notifier.setTolerance(ros::Duration(0.2));
 	    laser_count = 0;
 	    
-	    debug_pub = node.advertise<sensor_msgs::PointCloud>("debug_point_cloud",1);
+	    if (debug_publish)
+	    	debug_pub = node.advertise<sensor_msgs::PointCloud>("debug_point_cloud",1);
 
 	}
 
       
 	void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan_in)  {
-// 	    ROS_INFO("LaserScanReceiver: I have %d ranges", scan_in->ranges.size());
+ 	    ROS_DEBUG("LaserScanReceiver: I have %d ranges", scan_in->ranges.size());
 	    sensor_msgs::PointCloud cloud;
-// 	    ROS_INFO("PIPPO");
 	    try {
 		projector.transformLaserScanToPointCloud(
 			      	  base_tf,*scan_in, cloud,listener);
 	    }
 	    catch (tf::TransformException& e)    {
-		ROS_ERROR("%s", e.what());
-		return;
+	    	ROS_ERROR("%s", e.what());
+	    	return;
 	    }
-// 	    ROS_INFO("EXIT PIPPO");
 	    
 	    obstacle_x.clear();
 	    obstacle_y.clear();
@@ -92,9 +92,10 @@ class LaserScanReceiver {
 	    }
 	    
 	    laser_count = obstacle_x.size();
-// 	    ROS_INFO("LaserScanReceiver: I have %d points", laser_count);
+	    ROS_DEBUG("Publishing pointcloud");
 	    
-	    debug_pub.publish(cloud);
+	    if (debug_publish)
+	    	debug_pub.publish(cloud);
 	 }
 	 
 	 float* get_obstacles_x() {
@@ -161,66 +162,88 @@ int main(int argc, char** argv) {
     CommandsReceiver commands(node);
     ROS_INFO("CommandsReceiver created");
     DynamicWindow dw;
+    ROS_INFO("Dynamic window is up and running");
     
     
     double alpha = 0.3;
+    node.param("alpha", alpha, 0.3);
     dw.setAlpha(alpha);	
-    double beta = 0.4;
-    dw.setBeta(beta);	
-    double gamma = 0.3;
-    dw.setGamma(gamma);	
-    double wpmax = DynamicWindow::deg2rad(100);
-    dw.setWpmax(wpmax);
-    double wmin = DynamicWindow::deg2rad(-90);
-    dw.setWmin(wmin);
-    double wmax = DynamicWindow::deg2rad(90);
-    dw.setWmax(wmax);
-    double wpbrake = DynamicWindow::deg2rad(100);
-    dw.setWpbrake(wpbrake);
-    double vmax = 0.5;
-    dw.setVmax(vmax);
-    double vpmax = 1.0;
-    dw.setVpmax(vpmax);
-    double vpbrake = 0.3;
-    dw.setVpbrake(vpbrake);
-    double tcmax = 0.2;
-    dw.setTime_c(tcmax);
-    double laser_max = 4.0;
-    dw.setLaser_max(laser_max);
-    double radius = 0.368;
-    dw.setRadius(radius);
-    
 
-    
+    double beta = 0.4;
+    node.param("beta", beta, 0.4);
+    dw.setBeta(beta);	
+
+    double gamma = 0.3;
+    node.param("gamma", gamma, 0.3);
+    dw.setGamma(gamma);	
+
+    double wpmax = DynamicWindow::deg2rad(100);
+    node.param("wpmax", wpmax, DynamicWindow::deg2rad(100));
+    dw.setWpmax(wpmax);
+
+    double wmin = DynamicWindow::deg2rad(100);
+    node.param("wmin", wmin, DynamicWindow::deg2rad(100));
+    dw.setWmin(wmin);
+
+    double wmax = DynamicWindow::deg2rad(90);
+    node.param("wmax", wmax, DynamicWindow::deg2rad(90));
+    dw.setWmax(wmax);
+
+    double wpbrake = DynamicWindow::deg2rad(100);
+    node.param("wpbrake", wpbrake, DynamicWindow::deg2rad(100));
+    dw.setWpbrake(wpbrake);
+
+    double vmax = 0.5;
+    node.param("vmax", vmax, 0.5);
+    dw.setVmax(vmax);
+
+    double vpmax = 1.0;
+    node.param("vpmax", vpmax, 1.0);
+    dw.setVpmax(vpmax);
+
+    double vpbrake = 0.3;
+    node.param("vpbrake", vpbrake, 0.3);
+    dw.setVpbrake(vpbrake);
+
+    double tcmax = 0.2;
+    node.param("tcmax", tcmax, 0.2);
+    dw.setTime_c(tcmax);
+
+    double laser_max = 4.0;
+    node.param("laser_max", laser_max, 4.0);
+    dw.setLaser_max(laser_max);
+
+    double robot_radius = 0.368;
+    node.param("robot_radius", robot_radius, 0.368);
+    dw.setRadius(robot_radius);
+
+    node.param("publish_pcl", debug_publish, false);
     
     ros::Rate loop_rate(1.0 / tcmax);
    
     while (node.ok()) {
-	ros::spinOnce();
-	
-	if (commands.new_command) {
-	    double v_found = 0;
-	    double w_found = 0;
-	    
-// 	    commands.new_command = false;
-	    dw.setVmax(commands.desired_v);	
-	    dw.setLaser_count( laser.get_laser_count() );
-// 	    ROS_INFO("I've got %d points", laser.get_laser_count());
-	    
-// 	    ROS_INFO("Entering motion_model_sampling_time");
-	    dw.motion_model_sampling_time(tcmax - 0.02, pose.v, pose.w, commands.desired_w, laser.get_obstacles_x(), laser.get_obstacles_y(), v_found, w_found);
-// 	    ROS_INFO("Exit motion_model_sampling_time");
-	    
-	    geometry_msgs::Twist msg;
-	    msg.linear.x = v_found;
-	    msg.angular.z = w_found;
-// 	    ROS_INFO("DWC: output speeds: %f %f", v_found, w_found);
-// 	    ROS_INFO("Diff speeds: %f %f", v_found - commands.desired_v,w_found - commands.desired_w);
-	    commander_pub.publish(msg);
-	    
-	}
-	
-	loop_rate.sleep();
+		ros::spinOnce();
+
+		if (commands.new_command) {
+			double v_found = 0;
+			double w_found = 0;
+
+	// 	    commands.new_command = false;
+			dw.setVmax(commands.desired_v);
+			dw.setLaser_count( laser.get_laser_count() );
+			ROS_DEBUG("I've got %d points", laser.get_laser_count());
+
+			dw.motion_model_sampling_time(tcmax - 0.02, pose.v, pose.w, commands.desired_w, laser.get_obstacles_x(), laser.get_obstacles_y(), v_found, w_found);
+
+			geometry_msgs::Twist msg;
+			msg.linear.x = v_found;
+			msg.angular.z = w_found;
+			ROS_DEBUG("DWC: output speeds: %f %f", v_found, w_found);
+			commander_pub.publish(msg);
+
+		}
+
+		loop_rate.sleep();
     }
     
 }
