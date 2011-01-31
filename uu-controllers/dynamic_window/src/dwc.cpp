@@ -181,8 +181,8 @@ int main(int argc, char** argv) {
     node.param("wpmax", wpmax, DynamicWindow::deg2rad(100));
     dw.setWpmax(wpmax);
 
-    double wmin = DynamicWindow::deg2rad(100);
-    node.param("wmin", wmin, DynamicWindow::deg2rad(100));
+    double wmin = DynamicWindow::deg2rad(-90);
+    node.param("wmin", wmin, DynamicWindow::deg2rad(-90));
     dw.setWmin(wmin);
 
     double wmax = DynamicWindow::deg2rad(90);
