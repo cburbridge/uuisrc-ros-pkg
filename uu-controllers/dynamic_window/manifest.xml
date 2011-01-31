@@ -9,6 +9,7 @@
   </description>
   <author>"Lorenzo Riano (lorenzo.riano@gmail.com)" </author>
   <license>GNU</license>
+  <url> http://www.ros.org/wiki/dynamic_window </url>
   <review status="unreviewed" notes=""/>
   <depend package="roscpp"/>
   <depend package="sensor_msgs"/>
