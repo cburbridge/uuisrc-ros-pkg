@@ -1,0 +1,17 @@
+<package>
+  <description brief="laser_to_pointcloud">
+
+     laser_to_pointcloud
+
+  </description>
+  <author>Lorenzo Riano</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/laser_to_pointcloud</url>
+  <depend package="sensor_msgs"/>
+  <depend package="pcl"/>
+  <depend package="laser_geometry"/>
+
+</package>
+
+

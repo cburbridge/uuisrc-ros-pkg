@@ -1,0 +1,7 @@
+<stack>
+  <description brief="Utilities">Various utilities</description>
+  <author>Chris Burbridge and Lorenzo Riano</author>
+  <license>GPL</license>  
+  <review status="unreviewed" notes=""/>
+  <depend stack="ros" />
+</stack>

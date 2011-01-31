@@ -1,0 +1,18 @@
+<launch>
+
+  <node pkg="player_interface" type="ros_player" name="ros_player" output="screen">
+  </node>
+  
+  <node pkg="tf" type="static_transform_publisher" name="static_transform_base_laser" output="screen" args="0.094 0 0 0 0 0 /base_link /laser_frame 10">
+  </node>
+
+
+  
+  <node pkg="tf" type="static_transform_publisher" name="head_camera" output="screen" args="0.12 0 0.03 -1.57079633 0 -1.57079633 /head_frame /camera_frame 10">
+  </node>
+  
+  <!-- A static transform from /base_unit to /head_link -->
+  <node pkg="tf" type="static_transform_publisher" name="base_head" output="screen" args="0 0 1.3 0 0 0 /base_link /head_link 10">
+  </node>  
+  
+</launch>
