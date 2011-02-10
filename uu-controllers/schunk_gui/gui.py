@@ -12,7 +12,7 @@ import rospy
 import wx
 import xml.dom.minidom
 from sensor_msgs.msg import JointState
-from SchunkRos.msg import SchunkStatus
+from metralabs_ros.msg import SchunkStatus
 from std_msgs.msg import *
 from math import pi
 from math import degrees
