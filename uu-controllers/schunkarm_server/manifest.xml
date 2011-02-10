@@ -1,0 +1,17 @@
+<package>
+  <description brief="schunkarm_server">
+
+     schunkarm_server
+
+  </description>
+  <author>Lorenzo Riano lorenzo.riano@gmail.com</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/schunkarm_server</url>
+  <depend package="schunk_kinematics"/>
+  <depend package="metralabs_ros"/>
+  <depend package="velocity_safety"/>
+
+</package>
+
+
