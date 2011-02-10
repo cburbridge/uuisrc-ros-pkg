@@ -174,9 +174,9 @@ bool Kinematics::init() {
 	for (uint j=0; j<6; j++)
 	    coordsWeights(i,j) = 0.0;
     
-    coordsWeights(0,0) = 0.0;
-    coordsWeights(1,1) = 0.0;
-    coordsWeights(2,2) = 0.0;
+    coordsWeights(0,0) = 1.0;
+    coordsWeights(1,1) = 1.0;
+    coordsWeights(2,2) = 1.0;
     coordsWeights(3,3) = 1.0;
     coordsWeights(4,4) = 1.0;
     coordsWeights(5,5) = 1.0;
