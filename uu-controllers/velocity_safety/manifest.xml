@@ -9,11 +9,7 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/spline_controller</url>
   <depend package="rospy"/>
-  <depend package="SchunkRos"/>
   <depend package="schunk_kinematics"/>
-  <depend package="kinematics_msgs"/>
-  <depend package="geometry_msgs"/>
-  <depend package="visualization_msgs"/>
   <depend package="sensor_msgs"/>
 
 </package>

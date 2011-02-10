@@ -12,3 +12,4 @@ msg_gen/
 *.dox
 *.o
 
+uu-controllers/dynamic_window/cmake_install.cmake
