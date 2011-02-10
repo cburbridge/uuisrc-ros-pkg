@@ -12,7 +12,7 @@ import rospy
 import wx
 import xml.dom.minidom
 from sensor_msgs.msg import JointState
-from SchunkRos.msg import SchunkStatus
+from metralabs_ros.msg import SchunkStatus
 from std_msgs.msg import *
 from math import pi
 from math import degrees
@@ -35,7 +35,8 @@ class RosCommunication():
         self.currentJointStates=JointState()
         self.currentSchunkStatus=SchunkStatus()
         self.dependent_joints = rospy.get_param("dependent_joints", {})
-        
+        self.shutdown = False
+
         # Find all non-fixed joints
         number=0
         for child in robot.childNodes:
@@ -106,7 +107,7 @@ class RosCommunication():
         hz = 10 # 10hz
         r = rospy.Rate(hz) 
         
-        while not rospy.is_shutdown():
+        while not rospy.is_shutdown() and not self.shutdown:
             msg = JointState()
             self.targetPosition.header.stamp = rospy.Time.now()
 
@@ -143,6 +144,10 @@ class RosCommunication():
                 self.emergencyStop = False
             
             r.sleep()
+
+    def end(self):
+        self.shutdown=True
+
 
 class SchunkGui(wx.Frame):
     def __init__(self, title, roscom):
@@ -363,6 +368,7 @@ class SchunkGui(wx.Frame):
         print "Closing"
         self.timer.Stop()
         self.Destroy()
+        roscomms.end()
 
 
     def update_values(self):
