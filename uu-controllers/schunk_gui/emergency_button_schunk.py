@@ -17,7 +17,7 @@ except:
 	
 class EmergencyStopButton:
 	def __init__(self):
-		self.wTree = gtk.glade.XML("emergency_button.glade", "window1")		
+		self.wTree = gtk.glade.XML("emergency_button_schunk.glade", "window1")		
 		dic = { "on_togglebutton1_toggled" : self.emergency_stop, "on_window1_destroy" : self.shutdown }
 		self.wTree.signal_autoconnect(dic)
 
@@ -47,7 +47,7 @@ if __name__ == "__main__":
 	except:
 		print "Working directory does not exist. Check for mispellings"
 		sys.exit(1)
-	rospy.init_node('schunk_emergency_button')
+	rospy.init_node("emergency_button_schunk")
 	gtk.gdk.threads_init()
 	emergency = EmergencyStopButton()
 	gtk.main()
