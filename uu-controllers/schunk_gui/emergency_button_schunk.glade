@@ -4,7 +4,7 @@
   <!-- interface-naming-policy project-wide -->
   <widget class="GtkWindow" id="window1">
     <property name="visible">True</property>
-    <property name="title" translatable="yes">Emergency STOP</property>
+    <property name="title" translatable="yes">Emergency STOP for SCHUNK arm</property>
     <property name="default_width">300</property>
     <property name="default_height">300</property>
     <signal name="destroy" handler="on_window1_destroy"/>
