@@ -1,31 +1,28 @@
 #!/usr/bin/env python
 
-import sys
 try:
- 	import pygtk
-  	pygtk.require("2.0")
-except:
-  	pass
-try:
+	import sys
 	import gtk
   	import gtk.glade
-except:
-	sys.exit(1)
-
-try:
+ 	import pygtk
+  	pygtk.require("2.0")
 	import roslib; roslib.load_manifest('schunk_gui')
 	import rospy
 	from std_msgs.msg import *
 except:
-	pass
+	print "One (or more) of the dependencies is not satisfied"
+	sys.exit(1)
 
 	
 class EmergencyStopButton:
 	def __init__(self):
 		self.wTree = gtk.glade.XML("emergency_button.glade", "window1")		
-		dic = { "on_togglebutton1_toggled" : self.emergency_stop, "on_window1_destroy" : gtk.main_quit }
+		dic = { "on_togglebutton1_toggled" : self.emergency_stop, "on_window1_destroy" : self.shutdown }
 		self.wTree.signal_autoconnect(dic)
 
+	def shutdown(self, widget):
+		gtk.main_quit()
+		rospy.signal_shutdown("Bye!")
 
 	def emergency_stop(self, widget):
 		if widget.get_active():
@@ -40,5 +37,7 @@ class EmergencyStopButton:
 
 if __name__ == "__main__":
 	rospy.init_node('schunk_emergency_button')
+	gtk.gdk.threads_init()
 	emergency = EmergencyStopButton()
 	gtk.main()
+	rospy.spin()
