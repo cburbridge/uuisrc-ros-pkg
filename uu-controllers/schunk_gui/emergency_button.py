@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 try:
+	import os
 	import sys
 	import gtk
   	import gtk.glade
@@ -36,6 +37,16 @@ class EmergencyStopButton:
 			self.wTree.get_widget("image1").set_from_file("stop.png")	
 
 if __name__ == "__main__":
+	try:
+		wd = os.environ.get("UUISRC_ROS_PKG_PATH") + "/uu-controllers/schunk_gui/"
+	except:
+		print "Please set UUISRC_ROS_PKG_PATH environement variable to where your uuisrc-ros-pkg repository is"
+		sys.exit(1)
+	try:
+		os.chdir(wd)
+	except:
+		print "Working directory does not exist. Check for mispellings"
+		sys.exit(1)
 	rospy.init_node('schunk_emergency_button')
 	gtk.gdk.threads_init()
 	emergency = EmergencyStopButton()
