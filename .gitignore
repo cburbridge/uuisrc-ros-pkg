@@ -11,5 +11,5 @@ msg_gen/
 *.pyc
 *.dox
 *.o
-
+.settings
 uu-controllers/dynamic_window/cmake_install.cmake
