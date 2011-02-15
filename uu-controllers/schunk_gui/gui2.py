@@ -337,7 +337,7 @@ class SchunkTextControl:
         elif tokens[0] == "help":
             self.help()
         else:
-            self.command_not_found()
+            self.command_not_found(tokens[0])
 
 
     def command_enter_pressed(self, entry, combo):
@@ -367,7 +367,11 @@ class SchunkTextControl:
             self.wTree.get_widget("aFlagsFrame").set_sensitive(False)
             self.wTree.get_widget("vboxCommand").set_sensitive(False)
             self.wTree.get_widget("image1").set_from_file("go75.png")
+<<<<<<< HEAD
             self.wTree.get_widget("status").set_text("Astalavista baby. No way Master Yianni's fault.")
+=======
+            self.wTree.get_widget("status").set_text("Astalavista baby. No way Master Yianni's fault")
+>>>>>>> dev-yianni
             self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
         else:
             # GO
@@ -392,7 +396,7 @@ class SchunkTextControl:
                 line = line.rstrip("\n")
                 self.history_append(line, False)
         except:
-        	pass
+            pass
 
 
     def history_append_to_file(self, string):
@@ -434,7 +438,7 @@ class SchunkTextControl:
         elif response == gtk.RESPONSE_CANCEL:
             pass
         dialog.destroy()
-		
+        
 
     def load_pose(self, widget):
         dialog = gtk.FileChooserDialog(title="Load pose", 
@@ -482,8 +486,8 @@ class SchunkTextControl:
                         try:
                             value = int(tokens[2])
                             if value > self.modules_maxlimits[module] or value < self.modules_minlimits[module]:
-                                self.wTree.get_widget("status").set_text("ERROR: Let me see licking your elbow mate")
-                                self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+                                self.wTree.get_widget("status").set_text("WARNING: Let me see you licking your elbow mate")
+                                self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF00FF'))
                         except:
                             pass
                     except:
@@ -491,17 +495,19 @@ class SchunkTextControl:
                         self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
                 except:
                     self.wTree.get_widget("status").set_text("")
+                    
             elif tokens[0] == "vel":
                 try:
                     module = int(tokens[1])
                     try:
+                        moduleExists = self.modules_maxlimits[module] # this is actually the joint angle limits and not the velocity, but it helps to detect whether the module entered exists
                         string = "Range (deg/s): " + str(self.modules_velmin) + " to " + str(self.modules_velmax)
                         self.wTree.get_widget("status").set_text(string)
                         try:
                             value = int(tokens[2])
                             if value > self.modules_velmax or value < self.modules_velmin:
-                                self.wTree.get_widget("status").set_text("ERROR: Hope you have a safe distance mate")
-                                self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+                                self.wTree.get_widget("status").set_text("WARNING: Hope you have a safe distance mate")
+                                self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF00FF'))
                         except:
                             pass
                     except:
@@ -627,6 +633,10 @@ class SchunkTextControl:
                 if module >= 0 and module < self.numModules:
                     try:
                         value = tokens[2]
+                        if int(value) > self.modules_maxlimits or int(value) < self.modules_minlimits:
+                            self.wTree.get_widget("status").set_text("ERROR: I told you I can't lick my elbow. Move failed")
+                            self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+                            return
                         try:
                             value = float(value) * pi / 180
                             self.roscomms.targetPosition.name=[]
@@ -709,9 +719,9 @@ class SchunkTextControl:
                     try:
                         value = tokens[2]
                         if int(value) > self.modules_velmax or int(value) < self.modules_velmin:
-                            self.wTree.get_widget("status").set_text("ERROR: Are you mental? Velocity out of range. Move velocity failed")
+                            self.wTree.get_widget("status").set_text("ERROR: Can't go at speed of light. Move velocity failed")
                             self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
-                            return                         
+                            return
                         try:
                             value = float(value) * pi / 180
                             self.roscomms.targetVelocity.name=[]
@@ -747,8 +757,10 @@ class SchunkTextControl:
             #self.roscomms.setVelocity = True
 
 
-    def command_not_found(self):
-        print "command not found"
+    def command_not_found(self, token):
+        msg = "Ich spreche nicht Deutch. Was ist '" +  token + "'? Druckte 'Hilfe' fur Vokabelliste"
+        self.wTree.get_widget("status").set_text(msg)
+        self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
 
 # delete not needed any more
 #    def get_limits_strings(self):
