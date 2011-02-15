@@ -367,11 +367,7 @@ class SchunkTextControl:
             self.wTree.get_widget("aFlagsFrame").set_sensitive(False)
             self.wTree.get_widget("vboxCommand").set_sensitive(False)
             self.wTree.get_widget("image1").set_from_file("go75.png")
-<<<<<<< HEAD
-            self.wTree.get_widget("status").set_text("Astalavista baby. No way Master Yianni's fault.")
-=======
             self.wTree.get_widget("status").set_text("Astalavista baby. No way Master Yianni's fault")
->>>>>>> dev-yianni
             self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
         else:
             # GO
