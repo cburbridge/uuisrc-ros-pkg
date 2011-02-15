@@ -165,6 +165,7 @@ class SchunkTextControl:
         # load gui
         self.wTree = gtk.glade.XML("gui2.glade", "window1")
         self.wTree.get_widget("labelNumModules").set_text(str(self.numModules))
+        self.wTree.get_widget("status").set_text("Yes, Master")
         self.commandWidget = self.wTree.get_widget("command")
         
         # bindings
@@ -366,7 +367,8 @@ class SchunkTextControl:
             self.wTree.get_widget("aFlagsFrame").set_sensitive(False)
             self.wTree.get_widget("vboxCommand").set_sensitive(False)
             self.wTree.get_widget("image1").set_from_file("go75.png")
-            self.wTree.get_widget("status").set_text("Emergency stopped enabled. No way Yiannis is the coder.")
+            self.wTree.get_widget("status").set_text("Astalavista baby. No way Master Yianni's fault.")
+            self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
         else:
             # GO
             self.roscomms.emergencyStop = False
@@ -376,7 +378,8 @@ class SchunkTextControl:
             self.wTree.get_widget("aFlagsFrame").set_sensitive(True)
             self.wTree.get_widget("vboxCommand").set_sensitive(True)
             self.wTree.get_widget("image1").set_from_file("stop75.png")
-            self.wTree.get_widget("status").set_text("")
+            self.wTree.get_widget("status").set_text("I am back, Master")
+            self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
 
 
     def load_history(self):
