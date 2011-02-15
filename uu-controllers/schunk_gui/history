@@ -1,8 +1,0 @@
-move 2 45
-ack 4
-ack 2
-ref 1
-move 0 45
-ack 2
-ref all
-help
