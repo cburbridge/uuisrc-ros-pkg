@@ -157,7 +157,9 @@ class SchunkTextControl:
         
         # roscomms
         self.roscomms = RosCommunication()
-        Thread(target=self.roscomms.loop).start() # run roscomms in a seperate thread
+        self.roscommsThread = Thread(target=self.roscomms.loop)
+        #Thread(target=self.roscomms.loop).start() # run roscomms in a seperate thread
+        self.roscommsThread.start()
         
         # get number of modules
         self.numModules = self.roscomms.numModules
@@ -252,6 +254,8 @@ class SchunkTextControl:
             spinButton.set_range(self.modules_minlimits[i], self.modules_maxlimits[i])
             spinButton.set_increments(1, 5)
             spinButton.connect("activate", self.pose_spinButton_enter_pressed)
+            tooltip = "Move Joint" + str(i) + " to given position"
+            spinButton.set_tooltip_text(tooltip)
             self.posesframe_spinButtons.append(spinButton)
             vbox.add(label)
             vbox.add(spinButton)
@@ -274,6 +278,8 @@ class SchunkTextControl:
             spinButton.set_range(self.modules_velmin, self.modules_velmax)
             spinButton.set_increments(1, 5)
             spinButton.connect("activate", self.vel_spinButton_enter_pressed)
+            tooltip = "Move Joint" + str(i) + " with given velocity"
+            spinButton.set_tooltip_text(tooltip)
             self.velframe_spinButtons.append(spinButton)
             vbox.add(label)
             vbox.add(spinButton)
@@ -316,8 +322,12 @@ class SchunkTextControl:
         
 
     def shutdown(self, widget):
-        #Thread(target=self.roscomms.loop).join()
+        # kill gtk thread
         gtk.main_quit()
+        # kill roscomms thread
+        self.roscommsThread.join(0) # I think it is dead!
+        # kill ros thread
+        rospy.signal_shutdown("Because I said so!")
 
 
     def parser(self, string):
