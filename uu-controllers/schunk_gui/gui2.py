@@ -182,7 +182,8 @@ class SchunkTextControl:
                     "on_buttonRefAll_clicked":self.cb_ref_all,
                     "on_tbEmergency_toggled":self.emergency_stop,
                     "on_buttonMoveVelAll_clicked":self.cb_move_vel_all,
-                    "on_buttonCurMax_clicked":self.cb_currents_max }
+                    "on_buttonCurMax_clicked":self.cb_currents_max,
+                    "on_buttonVelStop_clicked":self.cb_stop_vel_all }
         self.wTree.signal_autoconnect(bindings)
         # Text input field of comboboxentry command is a gtk.Entry object
         entry = self.commandWidget.get_children()[0]
@@ -272,6 +273,7 @@ class SchunkTextControl:
             spinButton = gtk.SpinButton()
             spinButton.set_range(self.modules_velmin, self.modules_velmax)
             spinButton.set_increments(1, 5)
+            spinButton.connect("activate", self.vel_spinButton_enter_pressed)
             self.velframe_spinButtons.append(spinButton)
             vbox.add(label)
             vbox.add(spinButton)
@@ -312,98 +314,6 @@ class SchunkTextControl:
         w = self.wTree.get_widget("window1")
         w.resize(*w.size_request())
         
-
-    def flags_update(self, *args):
-        for i in range(0, self.numModules):
-            label = self.flags[i][self.flagsDict["Position"]]
-            flag = self.roscomms.currentJointStates.position[i]
-            flag *= 180 / pi
-            string = "%.2f" % flag
-            label.set_text(string)
-            #flag = round(flag, 2)
-            #label.set_text(str(flag))
-            
-            label = self.flags[i][self.flagsDict["Referenced"]]
-            flag = self.roscomms.currentSchunkStatus.joints[i].referenced
-            label.set_text(str(flag))
-            if not flag:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
-            else:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
-                
-            label = self.flags[i][self.flagsDict["MoveEnd"]]
-            flag = self.roscomms.currentSchunkStatus.joints[i].moveEnd
-            label.set_text(str(flag))
-            if not flag:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
-            else:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
-
-            label = self.flags[i][self.flagsDict["Brake"]]
-            flag = self.roscomms.currentSchunkStatus.joints[i].brake
-            label.set_text(str(flag))
-            if not flag:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
-            else:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
-
-
-            label = self.flags[i][self.flagsDict["Warning"]]
-            flag = self.roscomms.currentSchunkStatus.joints[i].warning
-            label.set_text(str(flag))
-            if flag:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
-            else:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
-
-            label = self.flags[i][self.flagsDict["Current"]]
-            flag = self.roscomms.currentSchunkStatus.joints[i].current
-            string = "%.2f" % flag
-            label.set_text(string)
-            #flag = round(flag,2)
-            #label.set_text(str(flag))
-
-            label = self.flags[i][self.flagsDict["Moving"]]
-            flag = self.roscomms.currentSchunkStatus.joints[i].moving
-            label.set_text(str(flag))
-            if flag:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
-            else:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
-
-            label = self.flags[i][self.flagsDict["PosReached"]]
-            flag = self.roscomms.currentSchunkStatus.joints[i].posReached
-            label.set_text(str(flag))
-            if not flag:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
-            else:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
- 
-            label = self.flags[i][self.flagsDict["Error"]]
-            flag = self.roscomms.currentSchunkStatus.joints[i].error
-            label.set_text(str(flag))
-            if flag:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
-            else:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
-                
-            label = self.flags[i][self.flagsDict["ErrorCode"]]
-            flag = self.roscomms.currentSchunkStatus.joints[i].errorCode
-            label.set_text(str(flag))
-            if flag != 0:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
-            else:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))           
-
-        return True
-
-    def update_flags(self, *args):
-        #flags = self.roscomms.currentSchunkStatus.joints
-        pass
-    
-    def format_flags(self):
-        pass
-
 
     def shutdown(self, widget):
         #Thread(target=self.roscomms.loop).join()
@@ -797,6 +707,22 @@ class SchunkTextControl:
     def cb_move_vel_all(self, widget):
         self.move_vel_all()
 
+        
+    def cb_stop_vel_all(self, widget):
+        self.roscomms.targetVelocity.name=[]
+        self.roscomms.targetVelocity.velocity=[]
+        for module in range(0,self.numModules):
+            name = "Joint" + str(module)
+            self.roscomms.targetVelocity.name.append(name)
+            value = 0.0
+            print value
+            self.roscomms.targetVelocity.velocity.append(value)
+            self.roscomms.setVelocity = True
+#        for i in range(0,self.numModules):
+#            command = "vel " + str(i) + " 0"
+#            tokens = command.split()
+#            self.move_vel(tokens)
+
             
     def move_vel(self, tokens):
         print tokens
@@ -841,13 +767,109 @@ class SchunkTextControl:
     def move_vel_all(self):
         self.roscomms.targetVelocity.name=[]
         self.roscomms.targetVelocity.velocity=[]
-        for module in range(0,self.numModules):
-            name = "Joint" + str(module)
+        for i in range(0,self.numModules):
+            name = "Joint" + str(i)
             self.roscomms.targetVelocity.name.append(name)
-            value = float(self.velframe_spinButtons[module].get_value()) * pi / 180
+            value = float(self.velframe_spinButtons[i].get_value()) * pi / 180
             print value
             self.roscomms.targetVelocity.velocity.append(value)
             self.roscomms.setVelocity = True
+
+
+    def vel_spinButton_enter_pressed(self, widget):
+        module = self.velframe_spinButtons.index(widget)
+        self.velframe_spinButtons[module].update()
+        value = float(self.velframe_spinButtons[module].get_value())
+        print ">>> HERE: " + str(value)
+        command = "vel " + str(module) + " " + str(value)
+        tokens = command.split()
+        print tokens
+        self.move_vel(tokens)
+
+
+    def update_flags(self, *args):
+        for i in range(0, self.numModules):
+            label = self.flags[i][self.flagsDict["Position"]]
+            flag = self.roscomms.currentJointStates.position[i]
+            flag *= 180 / pi
+            string = "%.2f" % flag
+            label.set_text(string)
+            #flag = round(flag, 2)
+            #label.set_text(str(flag))
+            
+            label = self.flags[i][self.flagsDict["Referenced"]]
+            flag = self.roscomms.currentSchunkStatus.joints[i].referenced
+            label.set_text(str(flag))
+            if not flag:
+                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+            else:
+                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
+                
+            label = self.flags[i][self.flagsDict["MoveEnd"]]
+            flag = self.roscomms.currentSchunkStatus.joints[i].moveEnd
+            label.set_text(str(flag))
+            if not flag:
+                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+            else:
+                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
+
+            label = self.flags[i][self.flagsDict["Brake"]]
+            flag = self.roscomms.currentSchunkStatus.joints[i].brake
+            label.set_text(str(flag))
+            if not flag:
+                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+            else:
+                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
+
+
+            label = self.flags[i][self.flagsDict["Warning"]]
+            flag = self.roscomms.currentSchunkStatus.joints[i].warning
+            label.set_text(str(flag))
+            if flag:
+                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+            else:
+                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
+
+            label = self.flags[i][self.flagsDict["Current"]]
+            flag = self.roscomms.currentSchunkStatus.joints[i].current
+            string = "%.2f" % flag
+            label.set_text(string)
+            #flag = round(flag,2)
+            #label.set_text(str(flag))
+
+            label = self.flags[i][self.flagsDict["Moving"]]
+            flag = self.roscomms.currentSchunkStatus.joints[i].moving
+            label.set_text(str(flag))
+            if flag:
+                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+            else:
+                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
+
+            label = self.flags[i][self.flagsDict["PosReached"]]
+            flag = self.roscomms.currentSchunkStatus.joints[i].posReached
+            label.set_text(str(flag))
+            if not flag:
+                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+            else:
+                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
+ 
+            label = self.flags[i][self.flagsDict["Error"]]
+            flag = self.roscomms.currentSchunkStatus.joints[i].error
+            label.set_text(str(flag))
+            if flag:
+                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+            else:
+                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
+                
+            label = self.flags[i][self.flagsDict["ErrorCode"]]
+            flag = self.roscomms.currentSchunkStatus.joints[i].errorCode
+            label.set_text(str(flag))
+            if flag != 0:
+                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+            else:
+                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))           
+
+        return True
 
 
     def command_not_found(self, token):
@@ -881,9 +903,7 @@ if __name__ == "__main__":
     gtk.gdk.threads_init()
     rospy.init_node('schunk_gui_text')
     gui = SchunkTextControl()
-    #Thread(target=gui.test).start()
     #Thread(target=gui.roscomms.loop).start() # statement is in the constructor of SchunkTextControl, either there or here
-    gobject.timeout_add(100, gui.flags_update)
+    gobject.timeout_add(100, gui.update_flags)
     gtk.main()
-    #
     rospy.spin()

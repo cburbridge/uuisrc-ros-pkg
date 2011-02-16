@@ -100,8 +100,8 @@
                                 <property name="tooltip" translatable="yes">Ctrl+C, Ctrl+L</property>
                                 <property name="use_stock">True</property>
                                 <signal name="clicked" handler="on_buttonClear_clicked"/>
-                                <accelerator key="l" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                                 <accelerator key="c" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                                <accelerator key="l" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                               </widget>
                               <packing>
                                 <property name="expand">False</property>
@@ -165,8 +165,8 @@
                 <property name="receives_default">True</property>
                 <property name="tooltip" translatable="yes">Ctrl+space, Ctrl+s</property>
                 <signal name="toggled" handler="on_tbEmergency_toggled"/>
-                <accelerator key="s" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                 <accelerator key="space" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                <accelerator key="s" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                 <child>
                   <widget class="GtkImage" id="image1">
                     <property name="visible">True</property>
@@ -318,6 +318,7 @@
                         <child>
                           <widget class="GtkVButtonBox" id="vbuttonbox3">
                             <property name="visible">True</property>
+                            <property name="layout_style">center</property>
                             <child>
                               <widget class="GtkButton" id="buttonMoveVelAll">
                                 <property name="label" translatable="yes">Move</property>
@@ -330,6 +331,21 @@
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
                                 <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkButton" id="buttonVelStop">
+                                <property name="label" translatable="yes">Stop</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <signal name="clicked" handler="on_buttonVelStop_clicked"/>
+                                <accelerator key="x" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                              </widget>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">1</property>
                               </packing>
                             </child>
                           </widget>
