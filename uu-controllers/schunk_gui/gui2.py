@@ -18,6 +18,7 @@ try:
     from math import pi
     from math import degrees
     from threading import Thread
+    import sched, time
 except:
     print "One (or more) of the dependencies is not satisfied"
     sys.exit(1)
@@ -311,10 +312,30 @@ class SchunkTextControl:
                 self.wTree.get_widget("aFlagsFrame").hide()
         w = self.wTree.get_widget("window1")
         w.resize(*w.size_request())
+        #self.test()
+        self.counter = 0
         
 
-    def test(self, widget):
+    def test(self, *args):
         print "Hello world!"
+        print self.roscomms.currentSchunkStatus.joints[0]
+        for i in range(0, self.numModules):
+            self.flags[i][self.flagsDict["Referenced"]].set_text(str(self.roscomms.currentSchunkStatus.joints[i].referenced))
+            self.flags[i][self.flagsDict["MoveEnd"]].set_text(str(self.roscomms.currentSchunkStatus.joints[i].moveEnd))
+            self.flags[i][self.flagsDict["Current"]].set_text(str(self.roscomms.currentSchunkStatus.joints[i].current))
+            self.flags[i][self.flagsDict["Moving"]].set_text(str(self.roscomms.currentSchunkStatus.joints[i].moving))
+            self.flags[i][self.flagsDict["PosReached"]].set_text(str(self.roscomms.currentSchunkStatus.joints[i].posReached))
+            pass
+        print ">> Bye: " + str(self.counter)
+        self.counter += 1
+        return True
+
+    def update_flags(self, *args):
+        #flags = self.roscomms.currentSchunkStatus.joints
+        pass
+    
+    def format_flags(self):
+        pass
 
 
     def shutdown(self, widget):
@@ -793,6 +814,9 @@ if __name__ == "__main__":
     gtk.gdk.threads_init()
     rospy.init_node('schunk_gui_text')
     gui = SchunkTextControl()
+    #Thread(target=gui.test).start()
     #Thread(target=gui.roscomms.loop).start() # statement is in the constructor of SchunkTextControl, either there or here
+    gobject.timeout_add(10, gui.test)
     gtk.main()
+    #
     rospy.spin()
