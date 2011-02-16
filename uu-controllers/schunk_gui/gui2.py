@@ -796,6 +796,8 @@ class SchunkTextControl:
             label = self.flags[i][self.flagsDict["Position"]]
             flag = self.roscomms.currentJointStates.position[i]
             flag *= 180 / pi
+            if (flag < 0.05) and (flag > -0.05):
+                flag = 0.0            
             string = "%.2f" % flag
             label.set_text(string)
             #flag = round(flag, 2)
