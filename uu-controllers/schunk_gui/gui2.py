@@ -455,7 +455,7 @@ class SchunkTextControl:
                     try:
                         self.pose[i] = float(row[i])
                     except:
-                        print "error"
+                        print "error in loading pose"
                         return
             self.update_pose_display()
         elif response == gtk.RESPONSE_CANCEL:
@@ -490,8 +490,8 @@ class SchunkTextControl:
                         except:
                             pass
                     except:
-                        self.wTree.get_widget("status").set_text("ERROR: module not found")
-                        self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+                        self.wTree.get_widget("status").set_text("WARNING: module does not exist")
+                        self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF00FF'))
                 except:
                     self.wTree.get_widget("status").set_text("")
                     
@@ -510,8 +510,8 @@ class SchunkTextControl:
                         except:
                             pass
                     except:
-                        self.wTree.get_widget("status").set_text("ERROR: module not found")
-                        self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+                        self.wTree.get_widget("status").set_text("WARNING: module does not exist")
+                        self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF00FF'))
                 except:
                     self.wTree.get_widget("status").set_text("")                
                 pass
@@ -519,8 +519,8 @@ class SchunkTextControl:
                 try:
                     module = int(tokens[1])
                     if (module >= self.numModules) or (module < 0):
-                        self.wTree.get_widget("status").set_text("ERROR: module not found")
-                        self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+                        self.wTree.get_widget("status").set_text("WARNING: module does not exist")
+                        self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF00FF'))
                 except:
                     self.wTree.get_widget("status").set_text("")
         except:
@@ -560,7 +560,6 @@ class SchunkTextControl:
         try:
             module = tokens[1]
             if module == "all":
-                print "ack all"
                 self.roscomms.ackAll = True
                 return
             try:
@@ -569,11 +568,12 @@ class SchunkTextControl:
                     self.roscomms.ackNumber = module
                     self.roscomms.ackJoint = True
                 else:
-                    print "ack failed: module does not exist"
+                    self.wTree.get_widget("status").set_text("ERROR: ack failed. Module does not exist")
+                    self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
             except:
-                print "ack failed: module does not exist"
+                self.wTree.get_widget("status").set_text("ERROR: move velocity failed. Module does not exist")
+                self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
         except:
-            print "ack all"
             self.roscomms.ackAll = True
 
 
@@ -589,7 +589,6 @@ class SchunkTextControl:
         try:
             module = tokens[1]
             if module == "all":
-                print "ref all"
                 self.roscomms.refAll = True
                 return
             try:
@@ -598,11 +597,14 @@ class SchunkTextControl:
                     self.roscomms.refNumber = module
                     self.roscomms.refJoint = True
                 else:
-                    print "ref failed: module does not exist"
+                    self.wTree.get_widget("status").set_text("ERROR: ref failed. Module does not exist")
+                    self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
             except:
-                print "ref failed: module does not exist"
+                self.wTree.get_widget("status").set_text("ERROR: ref failed. Module does not exist")
+                self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
         except:
-            print "Enter 'all' or module id"
+            self.wTree.get_widget("status").set_text("ERROR: ref failed. Need to specify module id or 'all'")
+            self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
 
 
     def cb_move_all(self, widget):
@@ -615,16 +617,13 @@ class SchunkTextControl:
         value = float(self.posesframe_spinButtons[module].get_value())
         command = "move " + str(module) + " " + str(value)
         tokens = command.split()
-        print tokens
         self.move(tokens)
 
 
     def move(self, tokens):
-        print tokens
         try:
             module = tokens[1]
             if module == "all":
-                print "move all"
                 self.move_all()
                 return
             try:
@@ -633,10 +632,6 @@ class SchunkTextControl:
                     try:
                         value = tokens[2]
                         if int(value) > self.modules_maxlimits[module] or int(value) < self.modules_minlimits[module]:
-                            print "WHY IS THIS EXECUTED?"
-                            print value
-                            print self.modules_maxlimits
-                            print self.modules_minlimits
                             self.wTree.get_widget("status").set_text("ERROR: I told you I can't lick my elbow. Move failed")
                             self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
                             return
@@ -645,7 +640,7 @@ class SchunkTextControl:
                             self.roscomms.targetPosition.name=[]
                             self.roscomms.targetPosition.name.append("Joint"+str(module))
                             self.roscomms.targetPosition.position = [value]
-                            print self.roscomms.targetPosition
+                            #print self.roscomms.targetPosition
                             self.roscomms.setPosition = True
                         except:
                             print "move failed: not valid value"
@@ -655,14 +650,17 @@ class SchunkTextControl:
                         self.roscomms.targetPosition.name=[]
                         self.roscomms.targetPosition.name.append("Joint"+str(module)) 
                         self.roscomms.targetPosition.position = [value]
-                        print self.roscomms.targetPosition
+                        #print self.roscomms.targetPosition
                         self.roscomms.setPosition = True 
                 else:
-                    print "move failed: module does not exist"
+                    self.wTree.get_widget("status").set_text("ERROR: move failed. Module does not exist")
+                    self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
             except:
-                print "move failed: module does not exist"
+                self.wTree.get_widget("status").set_text("ERROR: move failed. Module does not exist")
+                self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
         except:
-            print "Enter 'all' or module id"
+            self.wTree.get_widget("status").set_text("ERROR: move failed. Need to specify module id or 'all'")
+            self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))      
 
 
     def move_all(self):
@@ -672,7 +670,6 @@ class SchunkTextControl:
             name = "Joint" + str(module)
             self.roscomms.targetPosition.name.append(name)
             value = float(self.posesframe_spinButtons[module].get_value()) * pi / 180
-            print value
             self.roscomms.targetPosition.position.append(value)
             #print roscomms.targetPosition
             self.roscomms.setPosition = True
@@ -688,7 +685,6 @@ class SchunkTextControl:
         try:
             module = tokens[1]
             if module == "all":
-                print "currents max all"
                 self.roscomms.maxCurrents = True
                 return
             try:
@@ -696,11 +692,12 @@ class SchunkTextControl:
                 if module >= 0 and module < self.numModules:
                     pass
                 else:
-                    print "ref failed: module does not exist"
+                    self.wTree.get_widget("status").set_text("ERROR: currents max failed. Module does not exist")
+                    self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
             except:
-                print "ref failed: module does not exist"
+                self.wTree.get_widget("status").set_text("ERROR: currents max failed. Module does not exist")
+                self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
         except:
-            print "currents max all"
             self.roscomms.maxCurrents = True
     
 
@@ -715,7 +712,6 @@ class SchunkTextControl:
             name = "Joint" + str(module)
             self.roscomms.targetVelocity.name.append(name)
             value = 0.0
-            print value
             self.roscomms.targetVelocity.velocity.append(value)
             self.roscomms.setVelocity = True
 #        for i in range(0,self.numModules):
@@ -725,11 +721,9 @@ class SchunkTextControl:
 
             
     def move_vel(self, tokens):
-        print tokens
         try:
             module = tokens[1]
             if module == "all":
-                print "move_vel all"
                 self.move_vel_all()
                 return
             try:
@@ -757,11 +751,14 @@ class SchunkTextControl:
                         self.roscomms.targetVelocity.velocity = [value]
                         self.roscomms.setVelocity = True 
                 else:
-                    print "move_vel failed: module does not exist"
+                    self.wTree.get_widget("status").set_text("ERROR: move velocity failed. Module does not exist")
+                    self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
             except:
-                print "move_vel failed: module does not exist"
+                self.wTree.get_widget("status").set_text("ERROR: move velocity failed. Module does not exist")
+                self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
         except:
-            print "Enter 'all' or module id"        
+            self.wTree.get_widget("status").set_text("ERROR: move velocity failed. Need to specify module id or 'all'")
+            self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
       
 
     def move_vel_all(self):
@@ -771,7 +768,6 @@ class SchunkTextControl:
             name = "Joint" + str(i)
             self.roscomms.targetVelocity.name.append(name)
             value = float(self.velframe_spinButtons[i].get_value()) * pi / 180
-            print value
             self.roscomms.targetVelocity.velocity.append(value)
             self.roscomms.setVelocity = True
 
@@ -780,10 +776,8 @@ class SchunkTextControl:
         module = self.velframe_spinButtons.index(widget)
         self.velframe_spinButtons[module].update()
         value = float(self.velframe_spinButtons[module].get_value())
-        print ">>> HERE: " + str(value)
         command = "vel " + str(module) + " " + str(value)
         tokens = command.split()
-        print tokens
         self.move_vel(tokens)
 
 
