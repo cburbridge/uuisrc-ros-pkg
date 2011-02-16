@@ -122,9 +122,9 @@ class RosCommunication():
                 self.velocityPub.publish(self.targetVelocity)
                 self.setVelocity = False
             if self.ackJoint:
-                self.ackJoint = False
                 print "/ack"
                 rospy.Publisher("/ack", Int8, latch=True).publish(self.ackNumber)
+                self.ackJoint = False
             if self.refJoint:
                 self.refJoint = False
                 print "/ref"
@@ -371,8 +371,13 @@ class SchunkTextControl:
             self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
         else:
             # GO
-            self.roscomms.emergencyStop = False
-            self.ack("ack all".split())
+            #self.roscomms.emergencyStop = False
+            #self.ack("ack all".split())
+            for i in range(0,self.numModules):
+                command = "ack " + str(i) 
+                self.ack(command.split())
+                while self.roscomms.ackJoint == True:
+                    pass
             self.wTree.get_widget("aPoseFrame").set_sensitive(True)
             self.wTree.get_widget("aVelFrame").set_sensitive(True)
             self.wTree.get_widget("aFlagsFrame").set_sensitive(True)
@@ -629,7 +634,11 @@ class SchunkTextControl:
                 if module >= 0 and module < self.numModules:
                     try:
                         value = tokens[2]
-                        if int(value) > self.modules_maxlimits or int(value) < self.modules_minlimits:
+                        if int(value) > self.modules_maxlimits[module] or int(value) < self.modules_minlimits[module]:
+                            print "WHY IS THIS EXECUTED?"
+                            print value
+                            print self.modules_maxlimits
+                            print self.modules_minlimits
                             self.wTree.get_widget("status").set_text("ERROR: I told you I can't lick my elbow. Move failed")
                             self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
                             return
@@ -723,7 +732,7 @@ class SchunkTextControl:
                             self.roscomms.targetVelocity.name=[]
                             self.roscomms.targetVelocity.name.append("Joint"+str(module))
                             self.roscomms.targetVelocity.velocity = [value]
-                            #self.roscomms.setVelocity = True
+                            self.roscomms.setVelocity = True
                         except:
                             print "move_vel failed: not valid value"
                     except:
@@ -732,7 +741,7 @@ class SchunkTextControl:
                         self.roscomms.targetVelocity.name=[]
                         self.roscomms.targetVelocity.name.append("Joint"+str(module)) 
                         self.roscomms.targetVelocity.velocity = [value]
-                        #self.roscomms.setVelocity = True 
+                        self.roscomms.setVelocity = True 
                 else:
                     print "move_vel failed: module does not exist"
             except:
@@ -750,7 +759,7 @@ class SchunkTextControl:
             value = float(self.velframe_spinButtons[module].get_value()) * pi / 180
             print value
             self.roscomms.targetVelocity.velocity.append(value)
-            #self.roscomms.setVelocity = True
+            self.roscomms.setVelocity = True
 
 
     def command_not_found(self, token):
