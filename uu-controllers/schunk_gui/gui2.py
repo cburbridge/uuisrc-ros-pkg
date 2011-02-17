@@ -832,16 +832,18 @@ class SchunkTextControl:
         if self.inDegrees:
             self.wTree.get_widget("labelJointAngles").set_text("Joint angles (deg)")
             for i in range(0,self.numModules):
-                #self.posesframe_spinButtons[i].set_range(self.modules_minlimits[i], self.modules_minlimits[i])
-                value = self.posesframe_spinButtons[i].get_value()
-                self.posesframe_spinButtons[i].set_value(value*180/pi)
+                value = float(self.posesframe_spinButtons[i].get_value())
+                value *= 180 / pi
+                self.posesframe_spinButtons[i].set_range(self.modules_minlimits[i], self.modules_maxlimits[i])
+                self.posesframe_spinButtons[i].set_value(value)
                 self.posesframe_spinButtons[i].update()
         else:
             self.wTree.get_widget("labelJointAngles").set_text("Joint angles (rad)")
             for i in range(0,self.numModules):
-                #self.posesframe_spinButtons[i].set_range(self.modules_minlimits[i]*pi/180, self.modules_minlimits[i]*pi/180)
-                value = self.posesframe_spinButtons[i].get_value()
-                self.posesframe_spinButtons[i].set_value(value*pi/180)
+                value = float(self.posesframe_spinButtons[i].get_value())
+                value *= pi / 180
+                self.posesframe_spinButtons[i].set_range(self.modules_minlimits[i]*pi/180, self.modules_maxlimits[i]*pi/180)
+                self.posesframe_spinButtons[i].set_value(value)
                 self.posesframe_spinButtons[i].update()
         pass
 
