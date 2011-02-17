@@ -12,3 +12,9 @@ msg_gen/
 *.dox
 *.o
 _*
+.settings
+uu-controllers/dynamic_window/cmake_install.cmake
+*.pos
+uu-controllers/schunk_gui/history
+uu-controllers/schunk_gui/gui2_altern.glade
+

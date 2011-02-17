@@ -274,7 +274,6 @@
 
 
 <!-- The joints -->
-<!-- Values truncated to 4 decimal places and calculated based on the output of /opt/Metralabs/bin/SCHUNKMotionManipulatorDemo -->
 
  <joint name="Fixed_A" type="fixed">
     <origin xyz="0 0 0.0725" rpy="0 0 0"/>
@@ -287,7 +286,7 @@
     <origin xyz="0 0 0.09" rpy="0 0 0"/>
     <parent link="P90_1_LowerCube"/>
     <child link="P90_1_UpperCube"/>
-    <limit lower="-3.0543" upper="3.0543" effort="2" velocity="2.6" />
+    <limit lower="-3.141" upper="3.141" effort="2" velocity="2.6" />
     <axis xyz="0 0 1" />
  </joint>
  
@@ -308,7 +307,7 @@
     <origin xyz="0 0.09 0" rpy="0 0 0"/>
     <parent link="P90_2_LowerCube"/>
     <child link="P90_2_UpperCube"/>
-    <limit lower="-2.0071" upper="2.0071" effort="2" velocity="2.6" />
+    <limit lower="-2.006" upper="2.006" effort="2" velocity="2.6" />
     <axis xyz="0 1 0" />
  </joint>
  
@@ -328,7 +327,7 @@
     <origin xyz="0 0 0.09 " rpy="0 0 0"/>
     <parent link="P90_3_LowerCube"/>
     <child link="P90_3_UpperCube"/>
-    <limit lower="-2.8099" upper="2.8099" effort="2" velocity="2.6" />
+    <limit lower="-2.8" upper="2.8" effort="2" velocity="2.6" />
     <axis xyz="0 0 1" />
  </joint>
  
@@ -349,7 +348,7 @@
     <origin xyz="0 -0.07 0 " rpy="0 0 0"/>
     <parent link="P70_1_LowerCube"/>
     <child link="P70_1_UpperCube"/>
-    <limit lower="-2.0071" upper="2.0071" effort="2" velocity="2.6" />
+    <limit lower="-2.007" upper="2.007" effort="2" velocity="2.6" />
     <axis xyz="0 -1 0" />
  </joint>
  
@@ -370,7 +369,7 @@
     <origin xyz="0  0 0.07" rpy="0 0 0"/>
     <parent link="P70_2_LowerCube"/>
     <child link="P70_2_UpperCube"/>
-    <limit lower="-2.8099" upper="2.8099" effort="2" velocity="2.6" />
+    <limit lower="-2.80" upper="2.80" effort="2" velocity="2.6" />
     <axis xyz="0 0 1" />
  </joint>
  
@@ -390,14 +389,14 @@
     <origin xyz="0 0 0.035" rpy="0 0 0"/>
     <parent link="PW70Hinge"/>
     <child link="PW70Box"/>
-    <limit lower="-1.9198" upper="1.9198" effort="2" velocity="2.6" />
+    <limit lower="-1.900000" upper="1.90" effort="2" velocity="2.6" />
     <axis xyz="0 -1 0" />
  </joint>
  <joint name="Joint6" type="revolute">
     <origin xyz="0 0 0.07695" rpy="0 0 0"/>
     <parent link="PW70Box"/>
     <child link="PW70Rotor"/>
-    <limit lower="-3.0543" upper="3.0543" effort="2" velocity="2.6" />
+    <limit lower="-3.00000" upper="3.0" effort="2" velocity="2.6" />
     <axis xyz="0 0 1" />
  </joint>
  <joint name="Fixed_N" type="fixed">
