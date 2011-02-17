@@ -11,4 +11,4 @@ msg_gen/
 *.pyc
 *.dox
 *.o
-
+_*
