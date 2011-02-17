@@ -817,11 +817,11 @@ class SchunkTextControl:
     def update_flags(self, *args):
         for i in range(0, self.numModules):
             label = self.flags[i][self.flagsDict["Position"]]
-            flag = self.roscomms.currentJointStates.position[i]
-            flag *= 180 / pi
+            flagRadians = self.roscomms.currentJointStates.position[i]            
+            flag = flagRadians * 180 / pi
             if (flag < 0.05) and (flag > -0.05):
                 flag = 0.0            
-            string = "%.2f" % flag
+            string = "%.2f / %.2f" % (flag, flagRadians)
             label.set_text(string)
             #flag = round(flag, 2)
             #label.set_text(str(flag))
