@@ -15,9 +15,10 @@ try:
     import xml.dom.minidom
     from sensor_msgs.msg import JointState
     from metralabs_ros.msg import SchunkStatus
+    import math
     from math import pi
     from math import degrees
-    from threading import Thread   
+    from threading import Thread
     import tf
 
 except:
@@ -905,11 +906,17 @@ class SchunkTextControl:
         pose = []
         for v in value:
             pose.append(v)
-
         for i in range(0,len(pose)):
-            pose[i] *= 180 / pi
-            if pose[i] < 0.05 and pose[i] > -0.05:
+            if pose[i] < 0.005 and pose[i] > -0.005:
                 pose[i] = 0.0
+        
+        value = quaternion_to_euler(pose[3], pose[4], pose[5], pose[6])
+        rpy = []
+        for v in value:
+            rpy.append(v*180/pi)
+        for i in range(0,len(rpy)):
+            if rpy[i] < 0.005 and rpy[i] > -0.005:
+                rpy[i] = 0.0
 
         msg = "%.2f" % pose[0]
         self.wTree.get_widget("poseX").set_text(msg)
@@ -917,9 +924,12 @@ class SchunkTextControl:
         self.wTree.get_widget("poseY").set_text(msg)
         msg = "%.2f" % pose[2]
         self.wTree.get_widget("poseZ").set_text(msg)
-#        self.wTree.get_widget("poseRoll").set_text("foo")
-#        self.wTree.get_widget("posePitch").set_text("foo")
-#        self.wTree.get_widget("poseYaw").set_text("foo")
+        msg = "%.2f" % rpy[0]
+        self.wTree.get_widget("poseRoll").set_text(msg)
+        msg = "%.2f" % rpy[1]
+        self.wTree.get_widget("posePitch").set_text(msg)
+        msg = "%.2f" % rpy[2]
+        self.wTree.get_widget("poseYaw").set_text(msg)
         msg = "%.2f" % pose[3]
         self.wTree.get_widget("poseQx").set_text(msg)
         msg = "%.2f" % pose[4]
@@ -928,7 +938,8 @@ class SchunkTextControl:
         self.wTree.get_widget("poseQz").set_text(msg)
         msg = "%.2f" % pose[6]
         self.wTree.get_widget("poseQw").set_text(msg)
-        pass
+
+        return True
 
 
     def command_not_found(self, token):
@@ -945,6 +956,20 @@ class SchunkTextControl:
 #            string = str(min) + " to " + str(max)
 #            limitsStrings[i] = string
 #        return limitsStrings
+
+
+def quaternion_to_euler(qx,qy,qz,qw):
+    heading = math.atan2(2*qy*qw-2*qx*qz , 1 - 2*qy*qy - 2*qz*qz)
+    attitude = math.asin(2*qx*qy + 2*qz*qw)
+    bank = math.atan2(2*qx*qw-2*qy*qz , 1 - 2*qx*qx - 2*qz*qz)
+    if math.fabs(qx*qy + qz*qw - 0.5) < 0.001: # (north pole):
+        heading = 2 * math.atan2(qx,qw)
+        bank = 0
+    if math.fabs(qx*qy + qz*qw + 0.5) < 0.001: # (south pole):
+        heading = -2 * math.atan2(qx,qw)   
+        bank = 0
+
+    return heading, attitude, bank
 
 
 if __name__ == "__main__":
