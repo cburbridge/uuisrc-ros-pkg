@@ -499,7 +499,7 @@
                                           </packing>
                                         </child>
                                         <child>
-                                          <widget class="GtkLabel" id="poseR">
+                                          <widget class="GtkLabel" id="poseRoll">
                                             <property name="visible">True</property>
                                             <property name="xalign">0</property>
                                             <property name="label" translatable="yes">-</property>
@@ -511,7 +511,7 @@
                                           </packing>
                                         </child>
                                         <child>
-                                          <widget class="GtkLabel" id="pose ">
+                                          <widget class="GtkLabel" id="poseQx">
                                             <property name="visible">True</property>
                                             <property name="xalign">0</property>
                                             <property name="label" translatable="yes">-</property>
@@ -525,7 +525,7 @@
                                           </packing>
                                         </child>
                                         <child>
-                                          <widget class="GtkLabel" id="poseYq">
+                                          <widget class="GtkLabel" id="poseQy">
                                             <property name="visible">True</property>
                                             <property name="xalign">0</property>
                                             <property name="label" translatable="yes">-</property>
@@ -539,7 +539,7 @@
                                           </packing>
                                         </child>
                                         <child>
-                                          <widget class="GtkLabel" id="poseP">
+                                          <widget class="GtkLabel" id="posePitch">
                                             <property name="visible">True</property>
                                             <property name="xalign">0</property>
                                             <property name="label" translatable="yes">-</property>
@@ -551,7 +551,7 @@
                                           </packing>
                                         </child>
                                         <child>
-                                          <widget class="GtkLabel" id="poseZq">
+                                          <widget class="GtkLabel" id="poseQz">
                                             <property name="visible">True</property>
                                             <property name="xalign">0</property>
                                             <property name="label" translatable="yes">-</property>
@@ -565,7 +565,7 @@
                                           </packing>
                                         </child>
                                         <child>
-                                          <widget class="GtkLabel" id="pose">
+                                          <widget class="GtkLabel" id="poseYaw">
                                             <property name="visible">True</property>
                                             <property name="xalign">0</property>
                                             <property name="label" translatable="yes">-</property>
@@ -577,7 +577,7 @@
                                           </packing>
                                         </child>
                                         <child>
-                                          <widget class="GtkLabel" id="poseW">
+                                          <widget class="GtkLabel" id="poseQw">
                                             <property name="visible">True</property>
                                             <property name="xalign">0</property>
                                             <property name="label" translatable="yes">-</property>
@@ -618,7 +618,7 @@
                                           <widget class="GtkLabel" id="label22">
                                             <property name="visible">True</property>
                                             <property name="xalign">0</property>
-                                            <property name="label" translatable="yes">Xq:</property>
+                                            <property name="label" translatable="yes">Qx:</property>
                                           </widget>
                                           <packing>
                                             <property name="top_attach">1</property>
@@ -630,7 +630,7 @@
                                           <widget class="GtkLabel" id="label23">
                                             <property name="visible">True</property>
                                             <property name="xalign">0</property>
-                                            <property name="label" translatable="yes">Yq:</property>
+                                            <property name="label" translatable="yes">Qy:</property>
                                           </widget>
                                           <packing>
                                             <property name="left_attach">2</property>
@@ -644,7 +644,7 @@
                                           <widget class="GtkLabel" id="label24">
                                             <property name="visible">True</property>
                                             <property name="xalign">0</property>
-                                            <property name="label" translatable="yes">Zq:</property>
+                                            <property name="label" translatable="yes">Qz:</property>
                                           </widget>
                                           <packing>
                                             <property name="left_attach">4</property>
@@ -658,7 +658,7 @@
                                           <widget class="GtkLabel" id="label26">
                                             <property name="visible">True</property>
                                             <property name="xalign">0</property>
-                                            <property name="label" translatable="yes">W:</property>
+                                            <property name="label" translatable="yes">Qw:</property>
                                           </widget>
                                           <packing>
                                             <property name="left_attach">6</property>
@@ -695,7 +695,7 @@
                 <child>
                   <widget class="GtkLabel" id="label5">
                     <property name="visible">True</property>
-                    <property name="label" translatable="yes">Pose</property>
+                    <property name="label" translatable="yes">Pose (deg)</property>
                     <property name="use_markup">True</property>
                   </widget>
                   <packing>

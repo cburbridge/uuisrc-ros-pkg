@@ -900,6 +900,37 @@ class SchunkTextControl:
         return True
 
 
+    def update_pose(self, *args):
+        value = self.roscomms.getEndPosition()
+        pose = []
+        for v in value:
+            pose.append(v)
+
+        for i in range(0,len(pose)):
+            pose[i] *= 180 / pi
+            if pose[i] < 0.05 and pose[i] > -0.05:
+                pose[i] = 0.0
+
+        msg = "%.2f" % pose[0]
+        self.wTree.get_widget("poseX").set_text(msg)
+        msg = "%.2f" % pose[1]
+        self.wTree.get_widget("poseY").set_text(msg)
+        msg = "%.2f" % pose[2]
+        self.wTree.get_widget("poseZ").set_text(msg)
+#        self.wTree.get_widget("poseRoll").set_text("foo")
+#        self.wTree.get_widget("posePitch").set_text("foo")
+#        self.wTree.get_widget("poseYaw").set_text("foo")
+        msg = "%.2f" % pose[3]
+        self.wTree.get_widget("poseQx").set_text(msg)
+        msg = "%.2f" % pose[4]
+        self.wTree.get_widget("poseQy").set_text(msg)
+        msg = "%.2f" % pose[5]
+        self.wTree.get_widget("poseQz").set_text(msg)
+        msg = "%.2f" % pose[6]
+        self.wTree.get_widget("poseQw").set_text(msg)
+        pass
+
+
     def command_not_found(self, token):
         msg = "Ich spreche nicht Deutch. Was ist '" +  token + "'? Druckte 'Hilfe' fur Vokabelliste"
         self.wTree.get_widget("status").set_text(msg)
@@ -918,11 +949,6 @@ class SchunkTextControl:
 
 if __name__ == "__main__":
     wd = os.path.dirname(sys.argv[0])
-    #try:
-    #    wd = os.environ.get("UUISRC_ROS_PKG_PATH") + "/uu-controllers/schunk_gui/"
-    #except:
-    #    print "Please set UUISRC_ROS_PKG_PATH environement variable to where your uuisrc-ros-pkg repository is"
-    #    sys.exit(1)
     try:
         os.chdir(wd)
     except:
@@ -934,5 +960,6 @@ if __name__ == "__main__":
     gui = SchunkTextControl()
     #Thread(target=gui.roscomms.loop).start() # statement is in the constructor of SchunkTextControl, either there or here
     gobject.timeout_add(100, gui.update_flags)
+    gobject.timeout_add(100, gui.update_pose)
     gtk.main()
     rospy.spin()
