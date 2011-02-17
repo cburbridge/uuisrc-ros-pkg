@@ -1013,7 +1013,7 @@ if __name__ == "__main__":
         sys.exit(1)
     
     gtk.gdk.threads_init()
-    rospy.init_node('schunk_gui_text_test')
+    rospy.init_node('schunk_gui_text')
     gui = SchunkTextControl()
     #Thread(target=gui.roscomms.loop).start() # statement is in the constructor of SchunkTextControl, either there or here
     gobject.timeout_add(100, gui.update_flags)
