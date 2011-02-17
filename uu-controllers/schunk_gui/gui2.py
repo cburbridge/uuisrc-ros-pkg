@@ -671,14 +671,16 @@ class SchunkTextControl:
                         if self.inDegrees:
                             valueCheckLimit = int(value)
                         else:
-                            valueCheckLimit = int(value * 180 /pi)
+                            valueCheckLimit = float(value) * 180 / pi
+                            valueCheckLimit = int(valueCheckLimit)
                         if valueCheckLimit > self.modules_maxlimits[module] or valueCheckLimit < self.modules_minlimits[module]:
                             self.wTree.get_widget("status").set_text("ERROR: I told you I can't lick my elbow. Move failed")
                             self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
                             return
                         try:
+                            value = float(value)
                             if self.inDegrees:
-                                value = float(value) * pi / 180
+                                value = value * pi / 180
                             self.roscomms.targetPosition.name=[]
                             self.roscomms.targetPosition.name.append("Joint"+str(module))
                             self.roscomms.targetPosition.position = [value]
@@ -829,8 +831,18 @@ class SchunkTextControl:
         self.inDegrees = widget.get_active()
         if self.inDegrees:
             self.wTree.get_widget("labelJointAngles").set_text("Joint angles (deg)")
+            for i in range(0,self.numModules):
+                #self.posesframe_spinButtons[i].set_range(self.modules_minlimits[i], self.modules_minlimits[i])
+                value = self.posesframe_spinButtons[i].get_value()
+                self.posesframe_spinButtons[i].set_value(value*180/pi)
+                self.posesframe_spinButtons[i].update()
         else:
             self.wTree.get_widget("labelJointAngles").set_text("Joint angles (rad)")
+            for i in range(0,self.numModules):
+                #self.posesframe_spinButtons[i].set_range(self.modules_minlimits[i]*pi/180, self.modules_minlimits[i]*pi/180)
+                value = self.posesframe_spinButtons[i].get_value()
+                self.posesframe_spinButtons[i].set_value(value*pi/180)
+                self.posesframe_spinButtons[i].update()
         pass
 
 
@@ -1001,7 +1013,7 @@ if __name__ == "__main__":
         sys.exit(1)
     
     gtk.gdk.threads_init()
-    rospy.init_node('schunk_gui_text')
+    rospy.init_node('schunk_gui_text_test')
     gui = SchunkTextControl()
     #Thread(target=gui.roscomms.loop).start() # statement is in the constructor of SchunkTextControl, either there or here
     gobject.timeout_add(100, gui.update_flags)
