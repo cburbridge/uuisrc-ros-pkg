@@ -273,7 +273,7 @@ class SchunkTextControl:
             posesframe_vboxes.append(vbox)
             label = gtk.Label(name)
             posesframe_labels.append(label)
-            spinButton = gtk.SpinButton()
+            spinButton = gtk.SpinButton(digits=4)
             spinButton.set_range(self.modules_minlimits[i], self.modules_maxlimits[i])
             spinButton.set_increments(1, 5)
             spinButton.connect("activate", self.pose_spinButton_enter_pressed)
