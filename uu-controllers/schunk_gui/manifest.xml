@@ -9,6 +9,7 @@
   <depend package="rospy" />
   <depend package="metralabs_ros" />
   <depend package="sensor_msgs" />
+  <depend package="tf" />
   <rosdep name="wxpython" />
 
 </package>

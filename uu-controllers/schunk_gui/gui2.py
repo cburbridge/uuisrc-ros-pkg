@@ -17,7 +17,9 @@ try:
     from metralabs_ros.msg import SchunkStatus
     from math import pi
     from math import degrees
-    from threading import Thread
+    from threading import Thread   
+    import tf
+
 except:
     print "One (or more) of the dependencies is not satisfied"
     sys.exit(1)
@@ -93,6 +95,11 @@ class RosCommunication():
         self.emergencyStop = False
 
 #        self.targetCurrent = JointState() # TODO: Set the current controls with the effort field (in SchunkRos also) 
+
+        # A tf listener so that we can find the position of the end effector without service calls to
+        # kinematics node
+        self.tfListener = tf.TransformListener()
+
         
         
     def jointStateUpdate(self, data):
@@ -147,6 +154,21 @@ class RosCommunication():
                 self.emergencyStop = False
             
             r.sleep()
+            
+    def getEndPosition(self):
+        #TODO: these frames are hard coded - need to make them parameters
+        frame_from = '/schunk/position/PAM112_BaseConector'
+        frame_to = '/schunk/position/GripperBox'
+
+        try:
+            now = rospy.Time(0) # just get the latest rospy.Time.now()
+            self.tfListener.waitForTransform(frame_from, frame_to, now, rospy.Duration(3.0))
+            (trans,rot) = self.tfListener.lookupTransform(frame_from, frame_to, now)
+        except (tf.LookupException, tf.ConnectivityException):
+            print "Can't get end effector transform.!"
+            return 0, 0, 0, 0, 0, 0, 0
+        return trans[0], trans[1], trans[2], rot[0], rot[1], rot[2], rot[3]
+
 
 
 
@@ -895,11 +917,12 @@ class SchunkTextControl:
 
 
 if __name__ == "__main__":
-    try:
-        wd = os.environ.get("UUISRC_ROS_PKG_PATH") + "/uu-controllers/schunk_gui/"
-    except:
-        print "Please set UUISRC_ROS_PKG_PATH environement variable to where your uuisrc-ros-pkg repository is"
-        sys.exit(1)
+    wd = os.path.dirname(sys.argv[0])
+    #try:
+    #    wd = os.environ.get("UUISRC_ROS_PKG_PATH") + "/uu-controllers/schunk_gui/"
+    #except:
+    #    print "Please set UUISRC_ROS_PKG_PATH environement variable to where your uuisrc-ros-pkg repository is"
+    #    sys.exit(1)
     try:
         os.chdir(wd)
     except:
