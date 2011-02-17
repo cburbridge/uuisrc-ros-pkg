@@ -208,7 +208,8 @@ class SchunkTextControl:
                     "on_tbEmergency_toggled":self.emergency_stop,
                     "on_buttonMoveVelAll_clicked":self.cb_move_vel_all,
                     "on_buttonCurMax_clicked":self.cb_currents_max,
-                    "on_buttonVelStop_clicked":self.cb_stop_vel_all }
+                    "on_buttonVelStop_clicked":self.cb_stop_vel_all,
+                    "on_inDegrees_toggled":self.degrees_or_radians }
         self.wTree.signal_autoconnect(bindings)
         # Text input field of comboboxentry command is a gtk.Entry object
         entry = self.commandWidget.get_children()[0]
@@ -342,6 +343,9 @@ class SchunkTextControl:
                 self.wTree.get_widget("aFlagsFrame").hide()
         w = self.wTree.get_widget("window1")
         w.resize(*w.size_request())
+        
+        # in degrees
+        self.inDegrees = self.wTree.get_widget("inDegrees")
         
 
     def shutdown(self, widget):
@@ -664,12 +668,17 @@ class SchunkTextControl:
                 if module >= 0 and module < self.numModules:
                     try:
                         value = tokens[2]
-                        if int(value) > self.modules_maxlimits[module] or int(value) < self.modules_minlimits[module]:
+                        if self.inDegrees:
+                            valueCheckLimit = int(value)
+                        else:
+                            valueCheckLimit = int(value * 180 /pi)
+                        if valueCheckLimit > self.modules_maxlimits[module] or valueCheckLimit < self.modules_minlimits[module]:
                             self.wTree.get_widget("status").set_text("ERROR: I told you I can't lick my elbow. Move failed")
                             self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
                             return
                         try:
-                            value = float(value) * pi / 180
+                            if self.inDegrees:
+                                value = float(value) * pi / 180
                             self.roscomms.targetPosition.name=[]
                             self.roscomms.targetPosition.name.append("Joint"+str(module))
                             self.roscomms.targetPosition.position = [value]
@@ -702,7 +711,9 @@ class SchunkTextControl:
         for module in range(0,self.numModules):
             name = "Joint" + str(module)
             self.roscomms.targetPosition.name.append(name)
-            value = float(self.posesframe_spinButtons[module].get_value()) * pi / 180
+            value = float(self.posesframe_spinButtons[module].get_value())
+            if self.inDegrees: # convert to radians, else it is already in radians
+                 value *= pi / 180
             self.roscomms.targetPosition.position.append(value)
             #print roscomms.targetPosition
             self.roscomms.setPosition = True
@@ -812,6 +823,15 @@ class SchunkTextControl:
         command = "vel " + str(module) + " " + str(value)
         tokens = command.split()
         self.move_vel(tokens)
+
+
+    def degrees_or_radians(self, widget):
+        self.inDegrees = widget.get_active()
+        if self.inDegrees:
+            self.wTree.get_widget("labelJointAngles").set_text("Joint angles (deg)")
+        else:
+            self.wTree.get_widget("labelJointAngles").set_text("Joint angles (rad)")
+        pass
 
 
     def update_flags(self, *args):
