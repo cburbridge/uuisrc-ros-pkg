@@ -1,5 +1,5 @@
 #Goal
-geometry_msgs/Pose goal_pose
+geometry_msgs/PoseStamped goal_pose
 ---
 
 #Result

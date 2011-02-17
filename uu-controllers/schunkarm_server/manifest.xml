@@ -8,9 +8,12 @@
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/schunkarm_server</url>
-  <depend package="schunk_kinematics"/>
+  <depend package="kinematics_msgs"/>
+  <depend package="geometry_msgs"/>
   <depend package="metralabs_ros"/>
   <depend package="velocity_safety"/>
+  <depend package="actionlib_msgs"/>
+  <depend package="actionlib"/>
 
 </package>
 

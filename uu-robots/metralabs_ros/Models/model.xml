@@ -348,7 +348,7 @@
     <origin xyz="0 -0.07 0 " rpy="0 0 0"/>
     <parent link="P70_1_LowerCube"/>
     <child link="P70_1_UpperCube"/>
-    <limit lower="-2.007" upper="2.007" effort="2" velocity="2.6" />
+    <limit lower="-0.78539816339744828" upper="2.007" effort="2" velocity="2.6" />
     <axis xyz="0 -1 0" />
  </joint>
  
