@@ -36,6 +36,7 @@ class Kinematics {
         KDL::JntArray joint_min, joint_max;
         KDL::Chain chain;
         unsigned int num_joints;
+        unsigned int num_links;
 
         KDL::ChainFkSolverPos_recursive* fk_solver;
         KDL::ChainIkSolverPos_NR_JL *ik_solver_pos;
@@ -184,8 +185,8 @@ bool Kinematics::init() {
     dynamic_cast<KDL::ChainIkSolverVel_wdls*>(ik_solver_vel)->setWeightTS(coordsWeights);
     
     
-    std::cerr<<"Pezzotto: damping factor is "<<lambda<<" eps is "<<eps<<"\n";
-    ROS_INFO("Setting damping factor to %f", lambda);
+//    std::cerr<<"Pezzotto: damping factor is "<<lambda<<" eps is "<<eps<<"\n";
+//    ROS_INFO("Setting damping factor to %f", lambda);
 
     
     ik_solver_pos = new KDL::ChainIkSolverPos_NR_JL(chain, joint_min, joint_max,
@@ -228,9 +229,12 @@ bool Kinematics::loadModel(const std::string xml) {
 
 bool Kinematics::readJoints(urdf::Model &robot_model) {
     num_joints = 0;
+    num_links = 0;
     // get joint maxs and mins
     boost::shared_ptr<const urdf::Link> link = robot_model.getLink(tip_name);
     boost::shared_ptr<const urdf::Joint> joint;
+
+    info.link_names.push_back(link->name);
 
     while (link && link->name != root_name) {
         joint = robot_model.getJoint(link->parent_joint->name);
@@ -243,6 +247,8 @@ bool Kinematics::readJoints(urdf::Model &robot_model) {
             num_joints++;
         }
         link = robot_model.getLink(link->getParent()->name);
+        num_links++;
+        info.link_names.push_back(link->name);
     }
 
     joint_min.resize(num_joints);
