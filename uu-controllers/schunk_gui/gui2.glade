@@ -207,15 +207,47 @@
                           <widget class="GtkVBox" id="vbox2">
                             <property name="visible">True</property>
                             <child>
-                              <widget class="GtkCheckButton" id="inDegrees">
-                                <property name="label" translatable="yes">degrees</property>
+                              <widget class="GtkAlignment" id="alignment12">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">False</property>
-                                <property name="xalign">0.51999998092651367</property>
-                                <property name="active">True</property>
-                                <property name="draw_indicator">True</property>
-                                <signal name="toggled" handler="on_inDegrees_toggled"/>
+                                <property name="top_padding">6</property>
+                                <child>
+                                  <widget class="GtkHButtonBox" id="hbuttonbox3">
+                                    <property name="visible">True</property>
+                                    <property name="layout_style">start</property>
+                                    <child>
+                                      <widget class="GtkRadioButton" id="radiobuttonJointAngleDegrees">
+                                        <property name="label" translatable="yes">degrees</property>
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">True</property>
+                                        <property name="receives_default">False</property>
+                                        <property name="image_position">right</property>
+                                        <property name="active">True</property>
+                                        <property name="draw_indicator">True</property>
+                                        <signal name="toggled" handler="on_radiobuttonJointAngleDegrees_toggled"/>
+                                      </widget>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">False</property>
+                                        <property name="position">0</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <widget class="GtkRadioButton" id="radiobuttonJointAngleRadians">
+                                        <property name="label" translatable="yes">radians</property>
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">True</property>
+                                        <property name="receives_default">False</property>
+                                        <property name="draw_indicator">True</property>
+                                        <property name="group">radiobuttonJointAngleDegrees</property>
+                                      </widget>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">False</property>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                  </widget>
+                                </child>
                               </widget>
                               <packing>
                                 <property name="position">0</property>
@@ -224,7 +256,7 @@
                             <child>
                               <widget class="GtkAlignment" id="posesFrame">
                                 <property name="visible">True</property>
-                                <property name="top_padding">12</property>
+                                <property name="top_padding">6</property>
                                 <property name="right_padding">12</property>
                                 <child>
                                   <placeholder/>
@@ -300,7 +332,7 @@
                 <child>
                   <widget class="GtkLabel" id="labelJointAngles">
                     <property name="visible">True</property>
-                    <property name="label" translatable="yes">Joint angles (deg)</property>
+                    <property name="label" translatable="yes">Joint angles</property>
                     <property name="use_markup">True</property>
                   </widget>
                   <packing>
@@ -318,6 +350,8 @@
         <child>
           <widget class="GtkAlignment" id="aVelFrame">
             <property name="visible">True</property>
+            <property name="top_padding">6</property>
+            <property name="bottom_padding">6</property>
             <child>
               <widget class="GtkFrame" id="frame3">
                 <property name="visible">True</property>
@@ -333,7 +367,7 @@
                           <widget class="GtkAlignment" id="velFrame">
                             <property name="visible">True</property>
                             <property name="top_padding">6</property>
-                            <property name="bottom_padding">24</property>
+                            <property name="bottom_padding">12</property>
                             <property name="right_padding">12</property>
                             <child>
                               <placeholder/>
@@ -409,6 +443,8 @@
         <child>
           <widget class="GtkAlignment" id="alignment2">
             <property name="visible">True</property>
+            <property name="top_padding">6</property>
+            <property name="bottom_padding">6</property>
             <child>
               <widget class="GtkFrame" id="frame4">
                 <property name="visible">True</property>
@@ -842,52 +878,59 @@
           </packing>
         </child>
         <child>
-          <widget class="GtkHBox" id="hbox3">
+          <widget class="GtkAlignment" id="alignment13">
             <property name="visible">True</property>
+            <property name="top_padding">6</property>
+            <property name="bottom_padding">6</property>
+            <property name="left_padding">6</property>
+            <property name="right_padding">6</property>
             <child>
-              <widget class="GtkHBox" id="hbox4">
+              <widget class="GtkHBox" id="hbox3">
                 <property name="visible">True</property>
                 <child>
-                  <widget class="GtkLabel" id="labelNumModules">
+                  <widget class="GtkHBox" id="hbox4">
                     <property name="visible">True</property>
-                    <property name="label" translatable="yes">Unknown</property>
+                    <child>
+                      <widget class="GtkLabel" id="labelNumModules">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Unknown</property>
+                      </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkLabel" id="label2">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes"> modules</property>
+                      </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
                   </widget>
                   <packing>
-                    <property name="expand">False</property>
                     <property name="position">0</property>
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkLabel" id="label2">
+                  <placeholder/>
+                </child>
+                <child>
+                  <widget class="GtkLabel" id="status">
                     <property name="visible">True</property>
-                    <property name="label" translatable="yes"> modules</property>
+                    <property name="xalign">1</property>
                   </widget>
                   <packing>
-                    <property name="expand">False</property>
-                    <property name="position">1</property>
+                    <property name="position">2</property>
                   </packing>
                 </child>
               </widget>
-              <packing>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <widget class="GtkLabel" id="status">
-                <property name="visible">True</property>
-                <property name="xalign">1</property>
-              </widget>
-              <packing>
-                <property name="position">2</property>
-              </packing>
             </child>
           </widget>
           <packing>
-            <property name="expand">False</property>
-            <property name="padding">6</property>
             <property name="position">5</property>
           </packing>
         </child>
