@@ -1,7 +1,11 @@
 #include "ScitosBase.h"
+#include <iostream>
 
-ScitosBase::ScitosBase(const char* config_file, int pArgc, char* pArgv[]) {
+ScitosBase::ScitosBase(const char* config_file, int pArgc, char* pArgv[]) :
+	tOdometryHandler(this){
     
+	tOdometryHandler.set_base(this);
+
     m_command_v = 0;
     m_command_w = 0;
     m_x = 0;
@@ -125,9 +129,7 @@ ScitosBase::ScitosBase(const char* config_file, int pArgc, char* pArgv[]) {
 	fprintf(stderr, "FATAL: Failed to get the velocity data from the blackboard!\n");
 	exit(-1);
     }
-    
-    tOdometryHandler.set_base(this);
-    
+
 }
 
 void ScitosBase::loop() {   

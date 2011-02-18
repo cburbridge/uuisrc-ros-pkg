@@ -1,0 +1,7 @@
+#request
+trajectory_msgs/JointTrajectory traj
+
+--- 
+
+#response
+bool ok
