@@ -209,7 +209,7 @@ class SchunkTextControl:
                     "on_buttonMoveVelAll_clicked":self.cb_move_vel_all,
                     "on_buttonCurMax_clicked":self.cb_currents_max,
                     "on_buttonVelStop_clicked":self.cb_stop_vel_all,
-                    "on_inDegrees_toggled":self.degrees_or_radians }
+                    "on_radiobuttonJointAngleDegrees_toggled":self.degrees_or_radians }
         self.wTree.signal_autoconnect(bindings)
         # Text input field of comboboxentry command is a gtk.Entry object
         entry = self.commandWidget.get_children()[0]
@@ -345,7 +345,8 @@ class SchunkTextControl:
         w.resize(*w.size_request())
         
         # in degrees
-        self.inDegrees = self.wTree.get_widget("inDegrees")
+        self.inDegrees = self.wTree.get_widget("radiobuttonJointAngleDegrees").get_active()
+        print self.inDegrees
         
 
     def shutdown(self, widget):
@@ -830,7 +831,7 @@ class SchunkTextControl:
     def degrees_or_radians(self, widget):
         self.inDegrees = widget.get_active()
         if self.inDegrees:
-            self.wTree.get_widget("labelJointAngles").set_text("Joint angles (deg)")
+            #self.wTree.get_widget("labelJointAngles").set_text("Joint angles (deg)")
             for i in range(0,self.numModules):
                 value = float(self.posesframe_spinButtons[i].get_value())
                 value *= 180 / pi
@@ -838,15 +839,14 @@ class SchunkTextControl:
                 self.posesframe_spinButtons[i].set_value(value)
                 self.posesframe_spinButtons[i].update()
         else:
-            self.wTree.get_widget("labelJointAngles").set_text("Joint angles (rad)")
+            #self.wTree.get_widget("labelJointAngles").set_text("Joint angles (rad)")
             for i in range(0,self.numModules):
                 value = float(self.posesframe_spinButtons[i].get_value())
                 value *= pi / 180
                 self.posesframe_spinButtons[i].set_range(self.modules_minlimits[i]*pi/180, self.modules_maxlimits[i]*pi/180)
                 self.posesframe_spinButtons[i].set_value(value)
                 self.posesframe_spinButtons[i].update()
-        pass
-
+   
 
     def update_flags(self, *args):
         for i in range(0, self.numModules):
