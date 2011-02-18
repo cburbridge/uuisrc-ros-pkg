@@ -12,9 +12,119 @@
 #include <tf/transform_broadcaster.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <nav_msgs/Odometry.h>
+#include <trajectory_msgs/JointTrajectory.h>
+#include <trajectory_msgs/JointTrajectoryPoint.h>
+#include <boost/thread.hpp>
+#include <metralabs_ros/StartTrajectory.h>
+#include <metralabs_ros/StopTrajectory.h>
 
 //#include "PowerCube5.h"
 #include "PowerCube.h"
+
+class TrajectoryExecuter {
+
+public:
+
+	TrajectoryExecuter() {
+		run = false;
+		arm = NULL;
+	}
+
+	void main() {
+		while (true) {
+			{
+				boost::unique_lock<boost::mutex> lock(mut);
+				while (!run){
+					cond.wait(lock);
+				}
+			}
+			//I hope the mutex is unlocked now
+
+			ROS_INFO("Trajectory thread is starting its job");
+			follow_trajectory();
+			arm->pc_normal_stop();
+
+			{
+				//Self deactivate
+				boost::unique_lock<boost::mutex> lock(mut);
+				run = false;
+			}
+			ROS_INFO("Trajectory thread has finished its job");
+		}
+		return; //just to be sure the thread is terminated
+	}
+
+	bool start(trajectory_msgs::JointTrajectory& newtraj) {
+		{
+			boost::unique_lock<boost::mutex> lock(mut);
+
+			if (run) {
+				ROS_WARN("You need to stop a trajectory before issuing a new command. Ignoring the new command");
+				return false;
+			}
+
+			traj = newtraj;
+			run = true;
+		}
+		ROS_INFO("Waking up the thread");
+		cond.notify_one();
+		return true;
+	}
+
+	void stop() {
+		boost::unique_lock<boost::mutex> lock(mut);
+		run = false;
+	}
+
+	bool running() {
+		boost::unique_lock<boost::mutex> lock(mut);
+		return run;
+	}
+
+
+	PowerCube* arm;
+	std::map<std::string, unsigned int> nameToNumber;
+
+private:
+
+	void follow_trajectory() {
+		ros::Time now = ros::Time::now();
+		for (unsigned int step=0; step<traj.points.size(); step++) {
+			trajectory_msgs::JointTrajectoryPoint& point = traj.points[step];
+
+			//wait for the right time and check if it has to die
+			while ((ros::Time::now() - now) < point.time_from_start) {
+				; // <- Now things are really dirty
+				{ //This is tricky... a block as the only body of a loop!
+					boost::unique_lock<boost::mutex> lock(mut);
+					if (!run) {
+						ROS_INFO("Trajectory thread has been commanded to stop");
+						return;
+					}
+				}
+			}
+
+			//now apply speed to each joint
+			for (unsigned int joint_i = 0; joint_i<traj.joint_names.size(); joint_i++) {
+
+				unsigned int id = nameToNumber[traj.joint_names[joint_i]];
+				arm->pc_move_velocity(id, point.velocities[joint_i]/M_PI * 180.0);
+
+			}
+		}
+
+	}
+
+	trajectory_msgs::JointTrajectory traj;
+	bool run;
+	boost::condition_variable cond;
+	boost::mutex mut;
+
+};
+
+void start_thread(TrajectoryExecuter *exec) {
+	exec->main();
+}
 
 class SchunkServer {
 private:
@@ -27,9 +137,12 @@ private:
 	ros::Publisher m_currentJointStatePublisher;
 	ros::Publisher m_schunkStatusPublisher;
 	std::map<std::string, unsigned int> m_nameToNumber;
+
+	TrajectoryExecuter m_executer;
+
 public:
 
-	SchunkServer(ros::NodeHandle &node) : m_node(node) {
+	SchunkServer(ros::NodeHandle &node) : m_node(node){
 		init();
 	}
 
@@ -68,6 +181,13 @@ public:
 			status.jointName = m_joints[i]->name;
 			m_schunkStatus.joints.push_back(status);
 		}
+
+		m_executer.arm = &m_powerCube;
+		m_executer.nameToNumber = m_nameToNumber;
+
+		ROS_INFO("Starting the thread");
+		boost::thread(start_thread, &m_executer);
+
 		ROS_INFO("Ready");
 
 	}
@@ -210,6 +330,18 @@ public:
 		}
 	}
 
+	bool srv_startTrajectory(metralabs_ros::StartTrajectory::Request& req, metralabs_ros::StartTrajectory::Response& response) {
+		ROS_INFO("Schunk Server: starting trajectory");
+		response.ok = m_executer.start(req.traj);
+		return true;
+	}
+
+	bool srv_stopTrajectory(metralabs_ros::StopTrajectory::Request& req, metralabs_ros::StopTrajectory::Response& response) {
+		ROS_INFO("Schunk Server: stopping trajectory");
+		m_executer.stop();
+		return true;
+	}
+
 };
 
 class RosScitosBase {
@@ -320,6 +452,9 @@ int main(int argc, char **argv)
 	ros::Subscriber targetVelocity = n.subscribe("/targetVelocity", 1, &SchunkServer::cb_targetVelocity, &server);
 	ros::Subscriber targetAcceleration = n.subscribe("/targetAcceleration", 1, &SchunkServer::cb_targetAcceleration, &server);
 //	ros::Subscriber startPosition = n.subscribe("/startPosition", 1, &PubsAndSubs::cb_startPosition, &services);
+
+	ros::ServiceServer startTrajectory = n.advertiseService("/schunk/target_traj/start", &SchunkServer::srv_startTrajectory, &server);
+	ros::ServiceServer stopTrajectory = n.advertiseService("/schunk/target_traj/stop", &SchunkServer::srv_stopTrajectory, &server);
   
 	ros::Rate loop_rate(30);
 

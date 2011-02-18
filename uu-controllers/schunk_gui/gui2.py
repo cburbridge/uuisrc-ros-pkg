@@ -208,7 +208,8 @@ class SchunkTextControl:
                     "on_tbEmergency_toggled":self.emergency_stop,
                     "on_buttonMoveVelAll_clicked":self.cb_move_vel_all,
                     "on_buttonCurMax_clicked":self.cb_currents_max,
-                    "on_buttonVelStop_clicked":self.cb_stop_vel_all }
+                    "on_buttonVelStop_clicked":self.cb_stop_vel_all,
+                    "on_radiobuttonJointAngleDegrees_toggled":self.degrees_or_radians }
         self.wTree.signal_autoconnect(bindings)
         # Text input field of comboboxentry command is a gtk.Entry object
         entry = self.commandWidget.get_children()[0]
@@ -273,7 +274,7 @@ class SchunkTextControl:
             posesframe_vboxes.append(vbox)
             label = gtk.Label(name)
             posesframe_labels.append(label)
-            spinButton = gtk.SpinButton()
+            spinButton = gtk.SpinButton(digits=4)
             spinButton.set_range(self.modules_minlimits[i], self.modules_maxlimits[i])
             spinButton.set_increments(1, 5)
             spinButton.connect("activate", self.pose_spinButton_enter_pressed)
@@ -342,6 +343,10 @@ class SchunkTextControl:
                 self.wTree.get_widget("aFlagsFrame").hide()
         w = self.wTree.get_widget("window1")
         w.resize(*w.size_request())
+        
+        # in degrees
+        self.inDegrees = self.wTree.get_widget("radiobuttonJointAngleDegrees").get_active()
+        print self.inDegrees
         
 
     def shutdown(self, widget):
@@ -664,12 +669,19 @@ class SchunkTextControl:
                 if module >= 0 and module < self.numModules:
                     try:
                         value = tokens[2]
-                        if int(value) > self.modules_maxlimits[module] or int(value) < self.modules_minlimits[module]:
+                        if self.inDegrees:
+                            valueCheckLimit = int(value)
+                        else:
+                            valueCheckLimit = float(value) * 180 / pi
+                            valueCheckLimit = int(valueCheckLimit)
+                        if valueCheckLimit > self.modules_maxlimits[module] or valueCheckLimit < self.modules_minlimits[module]:
                             self.wTree.get_widget("status").set_text("ERROR: I told you I can't lick my elbow. Move failed")
                             self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
                             return
                         try:
-                            value = float(value) * pi / 180
+                            value = float(value)
+                            if self.inDegrees:
+                                value = value * pi / 180
                             self.roscomms.targetPosition.name=[]
                             self.roscomms.targetPosition.name.append("Joint"+str(module))
                             self.roscomms.targetPosition.position = [value]
@@ -702,7 +714,9 @@ class SchunkTextControl:
         for module in range(0,self.numModules):
             name = "Joint" + str(module)
             self.roscomms.targetPosition.name.append(name)
-            value = float(self.posesframe_spinButtons[module].get_value()) * pi / 180
+            value = float(self.posesframe_spinButtons[module].get_value())
+            if self.inDegrees: # convert to radians, else it is already in radians
+                 value *= pi / 180
             self.roscomms.targetPosition.position.append(value)
             #print roscomms.targetPosition
             self.roscomms.setPosition = True
@@ -814,14 +828,34 @@ class SchunkTextControl:
         self.move_vel(tokens)
 
 
+    def degrees_or_radians(self, widget):
+        self.inDegrees = widget.get_active()
+        if self.inDegrees:
+            #self.wTree.get_widget("labelJointAngles").set_text("Joint angles (deg)")
+            for i in range(0,self.numModules):
+                value = float(self.posesframe_spinButtons[i].get_value())
+                value *= 180 / pi
+                self.posesframe_spinButtons[i].set_range(self.modules_minlimits[i], self.modules_maxlimits[i])
+                self.posesframe_spinButtons[i].set_value(value)
+                self.posesframe_spinButtons[i].update()
+        else:
+            #self.wTree.get_widget("labelJointAngles").set_text("Joint angles (rad)")
+            for i in range(0,self.numModules):
+                value = float(self.posesframe_spinButtons[i].get_value())
+                value *= pi / 180
+                self.posesframe_spinButtons[i].set_range(self.modules_minlimits[i]*pi/180, self.modules_maxlimits[i]*pi/180)
+                self.posesframe_spinButtons[i].set_value(value)
+                self.posesframe_spinButtons[i].update()
+   
+
     def update_flags(self, *args):
         for i in range(0, self.numModules):
             label = self.flags[i][self.flagsDict["Position"]]
-            flag = self.roscomms.currentJointStates.position[i]
-            flag *= 180 / pi
+            flagRadians = self.roscomms.currentJointStates.position[i]            
+            flag = flagRadians * 180 / pi
             if (flag < 0.05) and (flag > -0.05):
                 flag = 0.0            
-            string = "%.2f" % flag
+            string = "%.2f / %.2f" % (flag, flagRadians)
             label.set_text(string)
             #flag = round(flag, 2)
             #label.set_text(str(flag))
