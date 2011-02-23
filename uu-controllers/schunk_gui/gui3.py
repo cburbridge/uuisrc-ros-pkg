@@ -4,7 +4,6 @@ try:
     import os
     import sys
     import gtk
-#    import gtk.glade
     import pygtk
     pygtk.require("2.0")
     import gobject
@@ -20,6 +19,7 @@ try:
     from math import degrees
     from threading import Thread
     import tf
+    import cPickle as pickle
 
 except:
     print "One (or more) of the dependencies is not satisfied"
@@ -158,8 +158,10 @@ class RosCommunication():
             
     def getEndPosition(self):
         #TODO: these frames are hard coded - need to make them parameters
-        frame_from = '/schunk/position/PAM112_BaseConector'
-        frame_to = '/schunk/position/GripperBox'
+#        frame_from = '/schunk/position/PAM112_BaseConector'
+#        frame_to = '/schunk/position/GripperBox'
+        frame_from = 'PAM112_BaseConector'
+        frame_to = 'GripperBox'
 
         try:
             now = rospy.Time(0) # just get the latest rospy.Time.now()
@@ -214,7 +216,15 @@ class SchunkTextControl:
                     "on_buttonCurMax_clicked":self.cb_currents_max,
                     "on_buttonVelStop_clicked":self.cb_stop_vel_all,
                     "on_radiobuttonJointAngleDegrees_toggled":self.degrees_or_radians,
-                    "on_buttonAddJointsAnglesVector_clicked":self.add_joints_angles_vector }
+                    "on_buttonAddJointsAnglesVector_clicked":self.add_joints_angles_vector,
+                    "on_buttonDialogJointAnglesNameCancel_clicked":self.dialogJointsAnglesVectorCancel,
+                    "on_buttonDialogJointAnglesNameOK_clicked":self.dialogJointsAnglesVectorOK,
+                    "on_comboboxDisplayJointAngles_changed":self.update_labelDisplayJointAngles,
+                    "on_buttonListJointsAnglesCopyCurrent_clicked":self.copy_to_joints_angles,
+                    "on_buttonListJointsAnglesRemoveCurrent_clicked":self.remove_joints_angles_vector,
+                    "on_buttonListJointsAnglesSave_clicked":self.save_listof_joints_angles,
+                    "on_buttonListJointsAnglesLoad_clicked":self.load_listof_joints_angles,
+                    "on_dialog1_delete_event":self.dialogJointsAnglesVector_catchDeleteEvent }
         #self.wTree.signal_autoconnect(bindings)
         self.wTree.connect_signals(bindings)
         # Text input field of comboboxentry command is a gtk.Entry object
@@ -352,7 +362,15 @@ class SchunkTextControl:
         
         # in degrees
         self.inDegrees = self.wTree.get_object("radiobuttonJointAngleDegrees").get_active()
-        print self.inDegrees
+        
+        # list of joints angles   
+        self.listJointsAngles = {}
+        self.combolistJointsAngles = self.wTree.get_object("combolistJointsAngles")
+        self.comboboxJointsAngles = self.wTree.get_object("comboboxDisplayJointAngles")
+        cell = gtk.CellRendererText()
+        self.comboboxJointsAngles.pack_start(cell, True)
+        self.comboboxJointsAngles.add_attribute(cell, "text", 0)
+        self.listJointsAngles_set_appropriate_buttons_sensitive()
         
 
     def shutdown(self, widget):
@@ -505,6 +523,135 @@ class SchunkTextControl:
         elif response == gtk.RESPONSE_CANCEL:
             pass
         dialog.destroy()
+        pass
+
+
+    def add_joints_angles_vector(self, widget):
+        name = self.find_unique_name_for_joints_angles_vector()
+        dialogText = self.wTree.get_object("entryJointsAnglesVectorName") 
+        dialogText.set_text(name)
+        self.wTree.get_object("dialog1").show()
+        pass
+
+
+    def dialogJointsAnglesVectorCancel(self, widget):
+        self.wTree.get_object("dialog1").hide()
+        pass
+
+
+    def dialogJointsAnglesVectorOK(self, widget):
+        name = self.wTree.get_object("entryJointsAnglesVectorName").get_text()
+        jointsAngles = []
+        for spinButton in self.posesframe_spinButtons:
+            jointsAngles.append(spinButton.get_value())
+        self.listJointsAngles[name] = jointsAngles
+        #string = name + str(jointsAngles)
+        self.combolistJointsAngles.append([name])
+        self.listJointsAngles_set_appropriate_buttons_sensitive()
+        self.wTree.get_object("dialog1").hide()
+        pass
+    
+
+    def dialogJointsAnglesVector_catchDeleteEvent(self, widget, data=None):
+        widget.hide()
+        return True
+
+
+    def update_labelDisplayJointAngles(self, widget):
+        try:
+            label = self.wTree.get_object("labelDisplayJointsAngles")
+            name = self.comboboxJointsAngles.get_active_text()
+            angles = self.listJointsAngles[name]
+            label.set_text(str(angles))
+            self.listJointsAngles_set_appropriate_buttons_sensitive()
+        except:
+            pass
+    
+    
+    def copy_to_joints_angles(self, widget):
+        try:
+            name = self.comboboxJointsAngles.get_active_text()
+            angles = self.listJointsAngles[name]
+            for i in range(self.numModules):
+                value = angles[i]
+                self.posesframe_spinButtons[i].set_value(value)
+        except:
+            print "Error occured in function <copy_to_joints_angles>"
+        pass
+
+
+    def remove_joints_angles_vector(self, widget):
+        index = self.comboboxJointsAngles.get_active()
+        if index >= 0:
+            name = self.comboboxJointsAngles.get_active_text()
+            try:
+                del self.listJointsAngles[name]
+                treestore = self.combolistJointsAngles
+                treeiter = treestore.iter_nth_child(None, index)
+                self.combolistJointsAngles.remove(treeiter)
+                self.wTree.get_object("labelDisplayJointsAngles").set_text("")
+            except:
+                print "bad"
+                return
+        self.listJointsAngles_set_appropriate_buttons_sensitive()
+        pass
+
+
+    def save_listof_joints_angles(self, widget):        
+        dialog = gtk.FileChooserDialog(title="Save list of joints angles (.lsa)",
+                                       action=gtk.FILE_CHOOSER_ACTION_SAVE,
+                                       buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, 
+                                                gtk.STOCK_SAVE, gtk.RESPONSE_OK))
+        dialog.set_default_response(gtk.RESPONSE_OK)
+        dialog.set_do_overwrite_confirmation(True)
+        response = dialog.run()
+        if response == gtk.RESPONSE_OK:
+            filename = dialog.get_filename()
+            pickle.dump(self.listJointsAngles, open(filename, "wb"))
+        elif response == gtk.RESPONSE_CANCEL:
+            pass
+        dialog.destroy()
+        pass
+
+
+    def load_listof_joints_angles(self, widget):
+        dialog = gtk.FileChooserDialog(title="Load pose", 
+                                       action=gtk.FILE_CHOOSER_ACTION_OPEN, 
+                                       buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
+                                                 gtk.STOCK_OPEN, gtk.RESPONSE_OK))
+        dialog.set_default_response(gtk.RESPONSE_OK)
+        dialog.select_filename("default.list")
+        response = dialog.run()
+        if response == gtk.RESPONSE_OK:
+            filename = dialog.get_filename()
+            self.listJointsAngles = pickle.load(open(filename))
+        elif response == gtk.RESPONSE_CANCEL:
+            pass
+        self.combolistJointsAngles.clear()
+        for k in self.listJointsAngles:
+            self.combolistJointsAngles.append([str(k)])
+        self.wTree.get_object("labelDisplayJointsAngles").set_text("")
+        self.listJointsAngles_set_appropriate_buttons_sensitive()
+        dialog.destroy()
+        pass        
+
+
+    def find_unique_name_for_joints_angles_vector(self):
+        i = 0
+        while True:
+            name = "joints_angles_" + str(i)
+            try:
+                test = self.listJointsAngles[name]
+                i += 1
+            except:
+                return name
+        pass
+
+
+    def listJointsAngles_set_appropriate_buttons_sensitive(self):
+        value = (self.comboboxJointsAngles.get_active() >= 0)
+        self.wTree.get_object("buttonListJointsAnglesCopyCurrent").set_sensitive(value)
+        self.wTree.get_object("buttonListJointsAnglesRemoveCurrent").set_sensitive(value)
         pass
 
 
@@ -836,6 +983,8 @@ class SchunkTextControl:
 
     def degrees_or_radians(self, widget):
         self.inDegrees = widget.get_active()
+        self.wTree.get_object("hboxListJointsVectors").set_sensitive(self.inDegrees)
+        self.wTree.get_object("buttonAddJointsAnglesVector").set_sensitive(self.inDegrees)
         if self.inDegrees:
             #self.wTree.get_object("labelJointAngles").set_text("Joint angles (deg)")
             for i in range(0,self.numModules):
@@ -855,7 +1004,7 @@ class SchunkTextControl:
    
 
     def update_flags(self, *args):
-        for i in range(0, self.numModules):
+        for i in range(self.numModules):
             label = self.flags[i][self.flagsDict["Position"]]
             flagRadians = self.roscomms.currentJointStates.position[i]            
             flag = flagRadians * 180 / pi

@@ -165,8 +165,8 @@
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="tooltip_text" translatable="yes">Emergency stop (Ctrl+space, Ctrl+s)</property>
-                <accelerator key="s" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                 <accelerator key="space" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                <accelerator key="s" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                 <signal name="toggled" handler="on_tbEmergency_toggled"/>
                 <child>
                   <object class="GtkImage" id="image1">
@@ -374,7 +374,7 @@
                         <property name="top_padding">6</property>
                         <property name="left_padding">12</property>
                         <child>
-                          <object class="GtkHBox" id="hbox11">
+                          <object class="GtkHBox" id="hboxListJointsVectors">
                             <property name="visible">True</property>
                             <child>
                               <object class="GtkAlignment" id="alignment15">
@@ -387,8 +387,12 @@
                                     <child>
                                       <object class="GtkComboBox" id="comboboxDisplayJointAngles">
                                         <property name="visible">True</property>
+                                        <property name="model">combolistJointsAngles</property>
+                                        <signal name="changed" handler="on_comboboxDisplayJointAngles_changed"/>
                                       </object>
                                       <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">False</property>
                                         <property name="position">0</property>
                                       </packing>
                                     </child>
@@ -397,7 +401,7 @@
                                         <property name="visible">True</property>
                                         <property name="left_padding">6</property>
                                         <child>
-                                          <object class="GtkLabel" id="labelDisplayJointAngles">
+                                          <object class="GtkLabel" id="labelDisplayJointsAngles">
                                             <property name="visible">True</property>
                                             <property name="xalign">0</property>
                                           </object>
@@ -424,6 +428,7 @@
                                       <object class="GtkButton" id="button6">
                                         <property name="label" translatable="yes">Move one</property>
                                         <property name="visible">True</property>
+                                        <property name="sensitive">False</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">True</property>
                                       </object>
@@ -437,6 +442,7 @@
                                       <object class="GtkButton" id="button7">
                                         <property name="label" translatable="yes">Move all</property>
                                         <property name="visible">True</property>
+                                        <property name="sensitive">False</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">True</property>
                                       </object>
@@ -455,12 +461,13 @@
                                   <object class="GtkVButtonBox" id="vbuttonbox4">
                                     <property name="visible">True</property>
                                     <child>
-                                      <object class="GtkButton" id="button1">
+                                      <object class="GtkButton" id="buttonListJointsAnglesCopyCurrent">
                                         <property name="label" translatable="yes">Copy</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">True</property>
                                         <property name="tooltip_text" translatable="yes">Copy to "execute" vector</property>
+                                        <signal name="clicked" handler="on_buttonListJointsAnglesCopyCurrent_clicked"/>
                                       </object>
                                       <packing>
                                         <property name="expand">False</property>
@@ -469,12 +476,13 @@
                                       </packing>
                                     </child>
                                     <child>
-                                      <object class="GtkButton" id="button2">
+                                      <object class="GtkButton" id="buttonListJointsAnglesRemoveCurrent">
                                         <property name="label" translatable="yes">Remove</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">True</property>
                                         <property name="tooltip_text" translatable="yes">Remove from list of poses</property>
+                                        <signal name="clicked" handler="on_buttonListJointsAnglesRemoveCurrent_clicked"/>
                                       </object>
                                       <packing>
                                         <property name="expand">False</property>
@@ -492,12 +500,13 @@
                                   <object class="GtkVButtonBox" id="vbuttonbox5">
                                     <property name="visible">True</property>
                                     <child>
-                                      <object class="GtkButton" id="button4">
+                                      <object class="GtkButton" id="buttonListJointsAnglesSave">
                                         <property name="label" translatable="yes">Save</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">True</property>
                                         <property name="tooltip_text" translatable="yes">Save list of poses</property>
+                                        <signal name="clicked" handler="on_buttonListJointsAnglesSave_clicked"/>
                                       </object>
                                       <packing>
                                         <property name="expand">False</property>
@@ -506,12 +515,13 @@
                                       </packing>
                                     </child>
                                     <child>
-                                      <object class="GtkButton" id="button5">
+                                      <object class="GtkButton" id="buttonListJointsAnglesLoad">
                                         <property name="label" translatable="yes">Load</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">True</property>
                                         <property name="tooltip_text" translatable="yes">Load list of poses</property>
+                                        <signal name="clicked" handler="on_buttonListJointsAnglesLoad_clicked"/>
                                       </object>
                                       <packing>
                                         <property name="expand">False</property>
@@ -1136,7 +1146,6 @@
       </object>
     </child>
   </object>
-  <object class="GtkListStore" id="liststore1"/>
   <object class="GtkDialog" id="dialog1">
     <property name="border_width">5</property>
     <property name="resizable">False</property>
@@ -1145,6 +1154,7 @@
     <property name="destroy_with_parent">True</property>
     <property name="type_hint">normal</property>
     <property name="has_separator">False</property>
+    <signal name="delete_event" handler="on_dialog1_delete_event"/>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox1">
         <property name="visible">True</property>
@@ -1165,11 +1175,11 @@
               </packing>
             </child>
             <child>
-              <object class="GtkEntry" id="entryJointAnglesStateName">
+              <object class="GtkEntry" id="entryJointsAnglesVectorName">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="has_focus">True</property>
-                <property name="max_length">10</property>
+                <property name="max_length">16</property>
                 <property name="invisible_char">&#x25CF;</property>
               </object>
               <packing>
@@ -1231,5 +1241,11 @@
       <action-widget response="0">buttonDialogJointAnglesNameCancel</action-widget>
       <action-widget response="0">buttonDialogJointAnglesNameOK</action-widget>
     </action-widgets>
+  </object>
+  <object class="GtkListStore" id="combolistJointsAngles">
+    <columns>
+      <!-- column-name jointsAnglesName -->
+      <column type="gchararray"/>
+    </columns>
   </object>
 </interface>
