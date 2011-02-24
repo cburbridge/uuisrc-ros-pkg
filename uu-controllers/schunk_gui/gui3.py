@@ -363,14 +363,15 @@ class SchunkTextControl:
         # in degrees
         self.inDegrees = self.wTree.get_object("radiobuttonJointAngleDegrees").get_active()
         
-        # list of joints angles   
-        self.listJointsAngles = {}
+        # list of joints angles
+        self.listJointsAngles = []
+        self.dictJointsAngles = {}
         self.combolistJointsAngles = self.wTree.get_object("combolistJointsAngles")
         self.comboboxJointsAngles = self.wTree.get_object("comboboxDisplayJointAngles")
         cell = gtk.CellRendererText()
         self.comboboxJointsAngles.pack_start(cell, True)
         self.comboboxJointsAngles.add_attribute(cell, "text", 0)
-        self.listJointsAngles_set_appropriate_buttons_sensitive()
+        self.dictJointsAngles_set_appropriate_buttons_sensitive()
         
 
     def shutdown(self, widget):
@@ -530,6 +531,17 @@ class SchunkTextControl:
         name = self.find_unique_name_for_joints_angles_vector()
         dialogText = self.wTree.get_object("entryJointsAnglesVectorName") 
         dialogText.set_text(name)
+        if self.wTree.get_object("comboboxDisplayJointAngles").get_active() >= 0:
+            self.wTree.get_object("radiobuttonDialogAddJointsAnglesAfter").set_sensitive(True)
+            self.wTree.get_object("radiobuttonDialogAddJointsAnglesBefore").set_sensitive(True)
+            name = self.wTree.get_object("comboboxDisplayJointAngles").get_active_text()
+            index = self.dictJointsAngles[name]
+            text = str(self.listJointsAngles[index][0]) + ": " + str(self.listJointsAngles[index][1])
+            self.wTree.get_object("labelDialogAddJointsAnglesIndex").set_text(text)
+        else:
+            self.wTree.get_object("radiobuttonDialogAddJointsAnglesAfter").set_sensitive(False)
+            self.wTree.get_object("radiobuttonDialogAddJointsAnglesBefore").set_sensitive(False)
+            self.wTree.get_object("labelDialogAddJointsAnglesIndex").set_text("")       
         self.wTree.get_object("dialog1").show()
         pass
 
@@ -544,10 +556,19 @@ class SchunkTextControl:
         jointsAngles = []
         for spinButton in self.posesframe_spinButtons:
             jointsAngles.append(spinButton.get_value())
-        self.listJointsAngles[name] = jointsAngles
-        #string = name + str(jointsAngles)
-        self.combolistJointsAngles.append([name])
-        self.listJointsAngles_set_appropriate_buttons_sensitive()
+        if self.wTree.get_object("radiobuttonDialogAddJointsAnglesEnd").get_active():
+            index = len(self.listJointsAngles)
+        elif self.wTree.get_object("radiobuttonDialogAddJointsAnglesAfter").get_active():
+            index = self.dictJointsAngles[self.wTree.get_object("comboboxDisplayJointAngles").get_active_text()] + 1
+        elif self.wTree.get_object("radiobuttonDialogAddJointsAnglesBefore").get_active():
+            index = self.dictJointsAngles[self.wTree.get_object("comboboxDisplayJointAngles").get_active_text()]
+        else:
+            index = len(self.listJointsAngles)
+        line = [name, jointsAngles]
+        self.dictJointsAngles[name] = index
+        self.listJointsAngles.insert(index, line)
+        self.combolistJointsAngles.insert(index, [name])
+        self.dictJointsAngles_set_appropriate_buttons_sensitive()
         self.wTree.get_object("dialog1").hide()
         pass
     
@@ -561,9 +582,10 @@ class SchunkTextControl:
         try:
             label = self.wTree.get_object("labelDisplayJointsAngles")
             name = self.comboboxJointsAngles.get_active_text()
-            angles = self.listJointsAngles[name]
+            index = self.dictJointsAngles[name]
+            angles = self.listJointsAngles[index][1]
             label.set_text(str(angles))
-            self.listJointsAngles_set_appropriate_buttons_sensitive()
+            self.dictJointsAngles_set_appropriate_buttons_sensitive()
         except:
             pass
     
@@ -571,7 +593,8 @@ class SchunkTextControl:
     def copy_to_joints_angles(self, widget):
         try:
             name = self.comboboxJointsAngles.get_active_text()
-            angles = self.listJointsAngles[name]
+            index = self.dictJointsAngles[name]
+            angles = self.listJointsAngles[index][1]
             for i in range(self.numModules):
                 value = angles[i]
                 self.posesframe_spinButtons[i].set_value(value)
@@ -581,19 +604,21 @@ class SchunkTextControl:
 
 
     def remove_joints_angles_vector(self, widget):
-        index = self.comboboxJointsAngles.get_active()
-        if index >= 0:
+        comboIndex = self.comboboxJointsAngles.get_active()
+        if comboIndex >= 0:
             name = self.comboboxJointsAngles.get_active_text()
             try:
-                del self.listJointsAngles[name]
+                index = self.dictJointsAngles[name]
+                del self.listJointsAngles[index]
+                del self.dictJointsAngles[name]
                 treestore = self.combolistJointsAngles
-                treeiter = treestore.iter_nth_child(None, index)
+                treeiter = treestore.iter_nth_child(None, comboIndex)
                 self.combolistJointsAngles.remove(treeiter)
                 self.wTree.get_object("labelDisplayJointsAngles").set_text("")
             except:
                 print "bad"
                 return
-        self.listJointsAngles_set_appropriate_buttons_sensitive()
+        self.dictJointsAngles_set_appropriate_buttons_sensitive()
         pass
 
 
@@ -607,7 +632,12 @@ class SchunkTextControl:
         response = dialog.run()
         if response == gtk.RESPONSE_OK:
             filename = dialog.get_filename()
-            pickle.dump(self.listJointsAngles, open(filename, "wb"))
+            try:
+                w = csv.writer(open(filename, "wb"))
+                w.writerows(self.listJointsAngles)
+            except:
+                print "failed to write to file (save_listof_joints_angles)"
+            #pickle.dump(self.dictJointsAngles, open(filename, "wb"))
         elif response == gtk.RESPONSE_CANCEL:
             pass
         dialog.destroy()
@@ -624,14 +654,23 @@ class SchunkTextControl:
         response = dialog.run()
         if response == gtk.RESPONSE_OK:
             filename = dialog.get_filename()
-            self.listJointsAngles = pickle.load(open(filename))
+            #self.dictJointsAngles = pickle.load(open(filename))
+            try:
+                r = csv.reader(open(filename, "rb"))
+                del self.listJointsAngles[:]
+                for row in r:
+                    self.listJointsAngles.append(row)
+                self.combolistJointsAngles.clear()
+                for i in range(len(self.listJointsAngles)):
+                    key = str(self.listJointsAngles[i][0])
+                    self.dictJointsAngles[key] = i
+                    self.combolistJointsAngles.append([key])            
+                self.wTree.get_object("labelDisplayJointsAngles").set_text("")                    
+            except:
+                print "load file failed (load_listof_joints_angles)"
         elif response == gtk.RESPONSE_CANCEL:
             pass
-        self.combolistJointsAngles.clear()
-        for k in self.listJointsAngles:
-            self.combolistJointsAngles.append([str(k)])
-        self.wTree.get_object("labelDisplayJointsAngles").set_text("")
-        self.listJointsAngles_set_appropriate_buttons_sensitive()
+        self.dictJointsAngles_set_appropriate_buttons_sensitive()
         dialog.destroy()
         pass        
 
@@ -640,15 +679,14 @@ class SchunkTextControl:
         i = 0
         while True:
             name = "joints_angles_" + str(i)
-            try:
-                test = self.listJointsAngles[name]
+            if name in self.dictJointsAngles:
                 i += 1
-            except:
+            else:
                 return name
         pass
 
 
-    def listJointsAngles_set_appropriate_buttons_sensitive(self):
+    def dictJointsAngles_set_appropriate_buttons_sensitive(self):
         value = (self.comboboxJointsAngles.get_active() >= 0)
         self.wTree.get_object("buttonListJointsAnglesCopyCurrent").set_sensitive(value)
         self.wTree.get_object("buttonListJointsAnglesRemoveCurrent").set_sensitive(value)
