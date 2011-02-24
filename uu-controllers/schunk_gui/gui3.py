@@ -633,7 +633,7 @@ class SchunkTextControl:
         if response == gtk.RESPONSE_OK:
             filename = dialog.get_filename()
             try:
-                w = csv.writer(open(filename, "wb"))
+                w = csv.writer(open(filename, "wb"), delimiter=':', quoting=csv.QUOTE_NONE)
                 w.writerows(self.listJointsAngles)
             except:
                 print "failed to write to file (save_listof_joints_angles)"
@@ -656,10 +656,13 @@ class SchunkTextControl:
             filename = dialog.get_filename()
             #self.dictJointsAngles = pickle.load(open(filename))
             try:
-                r = csv.reader(open(filename, "rb"))
+                r = csv.reader(open(filename, "rb"), delimiter=':', quoting=csv.QUOTE_NONE)
                 del self.listJointsAngles[:]
                 for row in r:
-                    self.listJointsAngles.append(row)
+                    key = row[0]
+                    value = map(float, row[1].strip("[]").split(", "))
+                    line = [key, value]
+                    self.listJointsAngles.append(line)
                 self.combolistJointsAngles.clear()
                 for i in range(len(self.listJointsAngles)):
                     key = str(self.listJointsAngles[i][0])
