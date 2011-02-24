@@ -19,7 +19,6 @@ try:
     from math import degrees
     from threading import Thread
     import tf
-    import cPickle as pickle
 
 except:
     print "One (or more) of the dependencies is not satisfied"
