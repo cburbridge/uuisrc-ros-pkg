@@ -224,7 +224,8 @@ class SchunkTextControl:
                     "on_buttonListJointsAnglesSave_clicked":self.save_listof_joints_angles,
                     "on_buttonListJointsAnglesLoad_clicked":self.load_listof_joints_angles,
                     "on_dialog1_delete_event":self.dialogJointsAnglesVector_catchDeleteEvent,
-                    "on_entryJointsAnglesVectorName_changed":self.entryJointsAnglesVectorName_changed }
+                    "on_entryJointsAnglesVectorName_changed":self.entryJointsAnglesVectorName_changed,
+                    "on_buttonCopyCurrent_clicked":self.on_buttonCopyCurrent_clicked }
         #self.wTree.signal_autoconnect(bindings)
         self.wTree.connect_signals(bindings)
         # Text input field of comboboxentry command is a gtk.Entry object
@@ -1155,6 +1156,20 @@ class SchunkTextControl:
                     label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))           
 
         return True
+
+
+    def on_buttonCopyCurrent_clicked(self, widget):
+        if (len(self.roscomms.currentJointStates.position) == self.numModules) and (len(self.roscomms.currentSchunkStatus.joints) == self.numModules):
+            for i in range(self.numModules):
+                flagRadians = self.roscomms.currentJointStates.position[i]
+                if self.inDegrees:
+                    flag = flagRadians * 180 / pi
+                    if (flag < 0.05) and (flag > -0.05):
+                        flag = 0.0      
+                    self.posesframe_spinButtons[i].set_value(flag)
+                else:
+                    self.posesframe_spinButtons[i].set_value(flagRadians)
+        pass
 
 
     def update_pose(self, *args):
