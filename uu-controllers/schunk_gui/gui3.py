@@ -223,7 +223,8 @@ class SchunkTextControl:
                     "on_buttonListJointsAnglesRemoveCurrent_clicked":self.remove_joints_angles_vector,
                     "on_buttonListJointsAnglesSave_clicked":self.save_listof_joints_angles,
                     "on_buttonListJointsAnglesLoad_clicked":self.load_listof_joints_angles,
-                    "on_dialog1_delete_event":self.dialogJointsAnglesVector_catchDeleteEvent }
+                    "on_dialog1_delete_event":self.dialogJointsAnglesVector_catchDeleteEvent,
+                    "on_entryJointsAnglesVectorName_changed":self.entryJointsAnglesVectorName_changed }
         #self.wTree.signal_autoconnect(bindings)
         self.wTree.connect_signals(bindings)
         # Text input field of comboboxentry command is a gtk.Entry object
@@ -531,6 +532,7 @@ class SchunkTextControl:
         name = self.find_unique_name_for_joints_angles_vector()
         dialogText = self.wTree.get_object("entryJointsAnglesVectorName") 
         dialogText.set_text(name)
+        self.wTree.get_object("labelDialogJointsAnglesErrorMessage").set_text("")
         if self.wTree.get_object("comboboxDisplayJointAngles").get_active() >= 0:
             self.wTree.get_object("radiobuttonDialogAddJointsAnglesAfter").set_sensitive(True)
             self.wTree.get_object("radiobuttonDialogAddJointsAnglesBefore").set_sensitive(True)
@@ -546,6 +548,18 @@ class SchunkTextControl:
         pass
 
 
+    def entryJointsAnglesVectorName_changed(self, widget):
+        name = self.wTree.get_object("entryJointsAnglesVectorName").get_text()
+        if name in self.dictJointsAngles:
+            self.wTree.get_object("labelDialogJointsAnglesErrorMessage").set_text("Label already exists")
+            self.wTree.get_object("labelDialogJointsAnglesErrorMessage").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+        elif name == "":
+            self.wTree.get_object("labelDialogJointsAnglesErrorMessage").set_text("Label is empty")
+            self.wTree.get_object("labelDialogJointsAnglesErrorMessage").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+        else:        
+            self.wTree.get_object("labelDialogJointsAnglesErrorMessage").set_text("")
+
+
     def dialogJointsAnglesVectorCancel(self, widget):
         self.wTree.get_object("dialog1").hide()
         pass
@@ -556,7 +570,6 @@ class SchunkTextControl:
         if name in self.dictJointsAngles:
             self.wTree.get_object("labelDialogJointsAnglesErrorMessage").set_text("Label already exists")
             self.wTree.get_object("labelDialogJointsAnglesErrorMessage").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
-            pass
         elif name == "":
             self.wTree.get_object("labelDialogJointsAnglesErrorMessage").set_text("Label is empty")
             self.wTree.get_object("labelDialogJointsAnglesErrorMessage").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))

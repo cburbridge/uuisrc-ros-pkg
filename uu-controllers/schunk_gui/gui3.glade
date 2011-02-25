@@ -165,8 +165,8 @@
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="tooltip_text" translatable="yes">Emergency stop (Ctrl+space, Ctrl+s)</property>
-                <accelerator key="space" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                 <accelerator key="s" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                <accelerator key="space" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                 <signal name="toggled" handler="on_tbEmergency_toggled"/>
                 <child>
                   <object class="GtkImage" id="image1">
@@ -1181,6 +1181,7 @@
                 <property name="has_focus">True</property>
                 <property name="max_length">16</property>
                 <property name="invisible_char">&#x25CF;</property>
+                <signal name="changed" handler="on_entryJointsAnglesVectorName_changed"/>
               </object>
               <packing>
                 <property name="expand">False</property>
