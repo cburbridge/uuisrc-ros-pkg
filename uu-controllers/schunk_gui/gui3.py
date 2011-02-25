@@ -363,6 +363,7 @@ class SchunkTextControl:
         self.inDegrees = self.wTree.get_object("radiobuttonJointAngleDegrees").get_active()
         
         # list of joints angles
+        self.wTree.get_object("entryJointsAnglesVectorName").connect("activate", self.dialogJointsAnglesName_enter_pressed)
         self.listJointsAngles = []
         self.dictJointsAngles = {}
         self.combolistJointsAngles = self.wTree.get_object("combolistJointsAngles")
@@ -570,6 +571,10 @@ class SchunkTextControl:
         self.dictJointsAngles_set_appropriate_buttons_sensitive()
         self.wTree.get_object("dialog1").hide()
         pass
+    
+    
+    def dialogJointsAnglesName_enter_pressed(self, entry):
+        self.wTree.get_object("buttonDialogJointAnglesNameOK").activate()
     
 
     def dialogJointsAnglesVector_catchDeleteEvent(self, widget, data=None):
