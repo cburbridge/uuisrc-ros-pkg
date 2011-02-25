@@ -553,23 +553,31 @@ class SchunkTextControl:
 
     def dialogJointsAnglesVectorOK(self, widget):
         name = self.wTree.get_object("entryJointsAnglesVectorName").get_text()
-        jointsAngles = []
-        for spinButton in self.posesframe_spinButtons:
-            jointsAngles.append(spinButton.get_value())
-        if self.wTree.get_object("radiobuttonDialogAddJointsAnglesEnd").get_active():
-            index = len(self.listJointsAngles)
-        elif self.wTree.get_object("radiobuttonDialogAddJointsAnglesAfter").get_active():
-            index = self.dictJointsAngles[self.wTree.get_object("comboboxDisplayJointAngles").get_active_text()] + 1
-        elif self.wTree.get_object("radiobuttonDialogAddJointsAnglesBefore").get_active():
-            index = self.dictJointsAngles[self.wTree.get_object("comboboxDisplayJointAngles").get_active_text()]
+        if name in self.dictJointsAngles:
+            self.wTree.get_object("labelDialogJointsAnglesErrorMessage").set_text("Label already exists")
+            self.wTree.get_object("labelDialogJointsAnglesErrorMessage").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+            pass
+        elif name == "":
+            self.wTree.get_object("labelDialogJointsAnglesErrorMessage").set_text("Label is empty")
+            self.wTree.get_object("labelDialogJointsAnglesErrorMessage").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
         else:
-            index = len(self.listJointsAngles)
-        line = [name, jointsAngles]
-        self.dictJointsAngles[name] = index
-        self.listJointsAngles.insert(index, line)
-        self.combolistJointsAngles.insert(index, [name])
-        self.dictJointsAngles_set_appropriate_buttons_sensitive()
-        self.wTree.get_object("dialog1").hide()
+            jointsAngles = []
+            for spinButton in self.posesframe_spinButtons:
+                jointsAngles.append(spinButton.get_value())
+            if self.wTree.get_object("radiobuttonDialogAddJointsAnglesEnd").get_active():
+                index = len(self.listJointsAngles)
+            elif self.wTree.get_object("radiobuttonDialogAddJointsAnglesAfter").get_active():
+                index = self.dictJointsAngles[self.wTree.get_object("comboboxDisplayJointAngles").get_active_text()] + 1
+            elif self.wTree.get_object("radiobuttonDialogAddJointsAnglesBefore").get_active():
+                index = self.dictJointsAngles[self.wTree.get_object("comboboxDisplayJointAngles").get_active_text()]
+            else:
+                index = len(self.listJointsAngles)
+            line = [name, jointsAngles]
+            self.dictJointsAngles[name] = index
+            self.listJointsAngles.insert(index, line)
+            self.combolistJointsAngles.insert(index, [name])
+            self.dictJointsAngles_set_appropriate_buttons_sensitive()
+            self.wTree.get_object("dialog1").hide()
         pass
     
     
