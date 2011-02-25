@@ -488,7 +488,7 @@ class SchunkTextControl:
         for spinButton in self.posesframe_spinButtons:
             print spinButton.get_value()
             jointAngles.append(spinButton.get_value())
-        dialog = gtk.FileChooserDialog(title="Save pose",
+        dialog = gtk.FileChooserDialog(title="Save pose (.pos)",
                                        action=gtk.FILE_CHOOSER_ACTION_SAVE,
                                        buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, 
                                                 gtk.STOCK_SAVE, gtk.RESPONSE_OK))
@@ -505,7 +505,7 @@ class SchunkTextControl:
         
 
     def load_pose(self, widget):
-        dialog = gtk.FileChooserDialog(title="Load pose", 
+        dialog = gtk.FileChooserDialog(title="Load pose (.pos)", 
                                        action=gtk.FILE_CHOOSER_ACTION_OPEN, 
                                        buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
                                                  gtk.STOCK_OPEN, gtk.RESPONSE_OK))
@@ -1252,7 +1252,7 @@ if __name__ == "__main__":
         sys.exit(1)
     
     gtk.gdk.threads_init()
-    rospy.init_node('schunk_gui_text')
+    rospy.init_node('schunk_gui_text', anonymous=True)
     gui = SchunkTextControl()
     #Thread(target=gui.roscomms.loop).start() # statement is in the constructor of SchunkTextControl, either there or here
     gobject.timeout_add(100, gui.update_flags)
