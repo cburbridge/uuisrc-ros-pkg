@@ -25,6 +25,7 @@
                         <property name="width_request">400</property>
                         <property name="visible">True</property>
                         <property name="has_focus">True</property>
+                        <property name="tooltip" translatable="yes">Type your command and click on 'Execute' button or press Enter key to execute. Ctrl+c or Ctrl+l to clear field.</property>
                         <signal name="editing_done" handler="on_command_editing_done"/>
                         <signal name="changed" handler="on_command_changed"/>
                         <signal name="move_active" handler="on_command_move_active"/>
@@ -72,8 +73,10 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
+                                <property name="tooltip" translatable="yes">Show vocabulary (Ctrl+h)</property>
                                 <property name="use_stock">True</property>
                                 <signal name="toggled" handler="on_tbHelp_toggled"/>
+                                <accelerator key="h" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                               </widget>
                               <packing>
                                 <property name="expand">False</property>
@@ -97,11 +100,11 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
-                                <property name="tooltip" translatable="yes">Ctrl+C, Ctrl+L</property>
+                                <property name="tooltip" translatable="yes">Clear textbox (Ctrl+C, Ctrl+L)</property>
                                 <property name="use_stock">True</property>
                                 <signal name="clicked" handler="on_buttonClear_clicked"/>
-                                <accelerator key="c" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                                 <accelerator key="l" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                                <accelerator key="c" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                               </widget>
                               <packing>
                                 <property name="expand">False</property>
@@ -115,7 +118,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
-                                <property name="tooltip" translatable="yes">Enter</property>
+                                <property name="tooltip" translatable="yes">Execute command  from textbox</property>
                                 <property name="use_stock">True</property>
                                 <signal name="clicked" handler="on_buttonExecute_clicked"/>
                               </widget>
@@ -163,10 +166,10 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="tooltip" translatable="yes">Ctrl+space, Ctrl+s</property>
+                <property name="tooltip" translatable="yes">Emergency stop (Ctrl+space, Ctrl+s)</property>
                 <signal name="toggled" handler="on_tbEmergency_toggled"/>
-                <accelerator key="space" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                 <accelerator key="s" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                <accelerator key="space" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                 <child>
                   <widget class="GtkImage" id="image1">
                     <property name="visible">True</property>
@@ -223,6 +226,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
+                                <property name="tooltip" translatable="yes">Save pose to file, please add '.pos' extension</property>
                                 <signal name="clicked" handler="on_buttonSavePose_clicked"/>
                               </widget>
                               <packing>
@@ -237,6 +241,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
+                                <property name="tooltip" translatable="yes">Load pose from file</property>
                                 <signal name="clicked" handler="on_buttonLoadPose_clicked"/>
                               </widget>
                               <packing>
@@ -251,6 +256,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
+                                <property name="tooltip" translatable="yes">Move all joints to positions given by their boxes</property>
                                 <signal name="clicked" handler="on_buttonMoveAll_clicked"/>
                               </widget>
                               <packing>
@@ -318,18 +324,36 @@
                         <child>
                           <widget class="GtkVButtonBox" id="vbuttonbox3">
                             <property name="visible">True</property>
+                            <property name="layout_style">center</property>
                             <child>
                               <widget class="GtkButton" id="buttonMoveVelAll">
                                 <property name="label" translatable="yes">Move</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
+                                <property name="tooltip" translatable="yes">Move all joints with velocities given from their corresponding textboxes</property>
                                 <signal name="clicked" handler="on_buttonMoveVelAll_clicked"/>
                               </widget>
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
                                 <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkButton" id="buttonVelStop">
+                                <property name="label" translatable="yes">Stop</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <property name="tooltip" translatable="yes">Stop velocity movement of all joints. WARNING: Breaks not active. (Ctrl+x)</property>
+                                <signal name="clicked" handler="on_buttonVelStop_clicked"/>
+                                <accelerator key="x" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                              </widget>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">1</property>
                               </packing>
                             </child>
                           </widget>
@@ -399,6 +423,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
+                                <property name="tooltip" translatable="yes">Acknowledge the errors of all the joints. WARNING: I don't think 'ack' works in general, whether from here or from the textbox. There are issues with the SchunkServer.</property>
                                 <signal name="clicked" handler="on_buttonAckAll_clicked"/>
                               </widget>
                               <packing>
@@ -413,6 +438,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
+                                <property name="tooltip" translatable="yes">Reference all joints</property>
                                 <signal name="clicked" handler="on_buttonRefAll_clicked"/>
                               </widget>
                               <packing>
@@ -427,6 +453,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
+                                <property name="tooltip" translatable="yes">Set the currents of all the joints to max</property>
                                 <signal name="clicked" handler="on_buttonCurMax_clicked"/>
                               </widget>
                               <packing>

@@ -4,7 +4,6 @@ try:
     import os
     import sys
     import gtk
-    import gtk.glade
     import pygtk
     pygtk.require("2.0")
     import gobject
@@ -72,7 +71,7 @@ class RosCommunication():
                 self.free_joints[name] = joint
                 self.joint_list.append(name)
                 self.joint_lookup[name] = self.numModules
-                self.numModules += 1
+                self.numModules += 1                
 
         # Setup all of the pubs and subs
         self.velocityPub = rospy.Publisher(VELOCITY_CMD_TOPIC, JointState)
@@ -158,8 +157,10 @@ class RosCommunication():
             
     def getEndPosition(self):
         #TODO: these frames are hard coded - need to make them parameters
-        frame_from = '/schunk/position/PAM112_BaseConector'
-        frame_to = '/schunk/position/GripperBox'
+#        frame_from = '/schunk/position/PAM112_BaseConector'
+#        frame_to = '/schunk/position/GripperBox'
+        frame_from = 'PAM112_BaseConector'
+        frame_to = 'GripperBox'
 
         try:
             now = rospy.Time(0) # just get the latest rospy.Time.now()
@@ -188,10 +189,14 @@ class SchunkTextControl:
         self.numModules = self.roscomms.numModules
         
         # load gui
-        self.wTree = gtk.glade.XML("gui2.glade", "window1")
-        self.wTree.get_widget("labelNumModules").set_text(str(self.numModules))
-        self.wTree.get_widget("status").set_text("Yes, Master")
-        self.commandWidget = self.wTree.get_widget("command")
+#        self.wTree = gtk.glade.XML("gui2.glade", "window1")
+        self.wTree = gtk.Builder()
+        self.wTree.add_from_file("gui3.glade") 
+
+        # set some initial display messages
+        self.wTree.get_object("labelNumModules").set_text(str(self.numModules))
+        self.wTree.get_object("status").set_text("Yes, Master")
+        self.commandWidget = self.wTree.get_object("command")
         
         # bindings
         bindings = {"on_window1_destroy":self.shutdown, 
@@ -209,8 +214,20 @@ class SchunkTextControl:
                     "on_buttonMoveVelAll_clicked":self.cb_move_vel_all,
                     "on_buttonCurMax_clicked":self.cb_currents_max,
                     "on_buttonVelStop_clicked":self.cb_stop_vel_all,
-                    "on_radiobuttonJointAngleDegrees_toggled":self.degrees_or_radians }
-        self.wTree.signal_autoconnect(bindings)
+                    "on_radiobuttonJointAngleDegrees_toggled":self.degrees_or_radians,
+                    "on_buttonAddJointsAnglesVector_clicked":self.add_joints_angles_vector,
+                    "on_buttonDialogJointAnglesNameCancel_clicked":self.dialogJointsAnglesVectorCancel,
+                    "on_buttonDialogJointAnglesNameOK_clicked":self.dialogJointsAnglesVectorOK,
+                    "on_comboboxDisplayJointAngles_changed":self.update_labelDisplayJointAngles,
+                    "on_buttonListJointsAnglesCopyCurrent_clicked":self.copy_to_joints_angles,
+                    "on_buttonListJointsAnglesRemoveCurrent_clicked":self.remove_joints_angles_vector,
+                    "on_buttonListJointsAnglesSave_clicked":self.save_listof_joints_angles,
+                    "on_buttonListJointsAnglesLoad_clicked":self.load_listof_joints_angles,
+                    "on_dialog1_delete_event":self.dialogJointsAnglesVector_catchDeleteEvent,
+                    "on_entryJointsAnglesVectorName_changed":self.entryJointsAnglesVectorName_changed,
+                    "on_buttonCopyCurrent_clicked":self.on_buttonCopyCurrent_clicked }
+        #self.wTree.signal_autoconnect(bindings)
+        self.wTree.connect_signals(bindings)
         # Text input field of comboboxentry command is a gtk.Entry object
         entry = self.commandWidget.get_children()[0]
         entry.connect("activate", self.command_enter_pressed, self.commandWidget)
@@ -237,7 +254,7 @@ class SchunkTextControl:
         self.commandWidget.child.set_completion(self.completion)
         
         # set help box
-        self.wTree.get_widget("labelHelp").set_text(str(self.words))
+        self.wTree.get_object("labelHelp").set_text(str(self.words))
 
         # pose limits of joints (deg/s)
         self.pose = []
@@ -284,8 +301,8 @@ class SchunkTextControl:
             vbox.add(label)
             vbox.add(spinButton)
             posesframe_hbox.add(vbox)
-        self.wTree.get_widget("posesFrame").add(posesframe_hbox)
-        self.wTree.get_widget("posesFrame").show_all()
+        self.wTree.get_object("posesFrame").add(posesframe_hbox)
+        self.wTree.get_object("posesFrame").show_all()
         
         # velocity fields
         velframe_hbox = gtk.HBox(False, 6)
@@ -308,15 +325,15 @@ class SchunkTextControl:
             vbox.add(label)
             vbox.add(spinButton)
             velframe_hbox.add(vbox)
-        self.wTree.get_widget("velFrame").add(velframe_hbox)
-        self.wTree.get_widget("velFrame").show_all()
+        self.wTree.get_object("velFrame").add(velframe_hbox)
+        self.wTree.get_object("velFrame").show_all()
         
         # flags fields
         flagsTitles = ["Position", "Referenced", "MoveEnd", "Brake", "Warning", "Current", "Moving", "PosReached", "Error", "Error code"]
         self.flagsDict = {"Position":0, "Referenced":1, "MoveEnd":2, "Brake":3, "Warning": 4, "Current":5, "Moving":6, "PosReached":7, "Error":8, "ErrorCode": 9}
         self.tableFlags = gtk.Table(self.numModules+1, len(flagsTitles)+1, homogeneous=False)
         self.tableFlags.set_col_spacings(12)
-        self.wTree.get_widget("flagsFrame").add(self.tableFlags)
+        self.wTree.get_object("flagsFrame").add(self.tableFlags)
         label = gtk.Label("#")
         self.tableFlags.attach(label, 0, 1, 0, 1)
         for i in range(1,len(flagsTitles)+1): # skip first column
@@ -332,21 +349,31 @@ class SchunkTextControl:
                 self.tableFlags.attach(label, j, j+1, i, i+1)
                 flagsRow.append(label)
             self.flags.append(flagsRow)
-        self.wTree.get_widget("flagsFrame").show_all()
+        self.wTree.get_object("flagsFrame").show_all()
                         
         # no argument full interface, also medium and mini modes
         if argc > 1:
             if (argv[1] == "medium") or (argv[1] == "mini"):
-                self.wTree.get_widget("aPoseFrame").hide()
-                self.wTree.get_widget("aVelFrame").hide()
+                self.wTree.get_object("aPoseFrame").hide()
+                self.wTree.get_object("aVelFrame").hide()
             if argv[1] == "mini":
-                self.wTree.get_widget("aFlagsFrame").hide()
-        w = self.wTree.get_widget("window1")
+                self.wTree.get_object("aFlagsFrame").hide()
+        w = self.wTree.get_object("window1")
         w.resize(*w.size_request())
         
         # in degrees
-        self.inDegrees = self.wTree.get_widget("radiobuttonJointAngleDegrees").get_active()
-        print self.inDegrees
+        self.inDegrees = self.wTree.get_object("radiobuttonJointAngleDegrees").get_active()
+        
+        # list of joints angles
+        self.wTree.get_object("entryJointsAnglesVectorName").connect("activate", self.dialogJointsAnglesName_enter_pressed)
+        self.listJointsAngles = []
+        self.dictJointsAngles = {}
+        self.combolistJointsAngles = self.wTree.get_object("combolistJointsAngles")
+        self.comboboxJointsAngles = self.wTree.get_object("comboboxDisplayJointAngles")
+        cell = gtk.CellRendererText()
+        self.comboboxJointsAngles.pack_start(cell, True)
+        self.comboboxJointsAngles.add_attribute(cell, "text", 0)
+        self.dictJointsAngles_set_appropriate_buttons_sensitive()
         
 
     def shutdown(self, widget):
@@ -377,7 +404,7 @@ class SchunkTextControl:
 
 
     def command_enter_pressed(self, entry, combo):
-        self.wTree.get_widget("buttonExecute").activate()
+        self.wTree.get_object("buttonExecute").activate()
 
 
     def clear(self, widget):
@@ -398,13 +425,13 @@ class SchunkTextControl:
         if widget.get_active():
             # STOP
             self.roscomms.emergencyStop = True
-            self.wTree.get_widget("aPoseFrame").set_sensitive(False)
-            self.wTree.get_widget("aVelFrame").set_sensitive(False)
-            self.wTree.get_widget("aFlagsFrame").set_sensitive(False)
-            self.wTree.get_widget("vboxCommand").set_sensitive(False)
-            self.wTree.get_widget("image1").set_from_file("go75.png")
-            self.wTree.get_widget("status").set_text("Astalavista baby. No way Master Yianni's fault")
-            self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+            self.wTree.get_object("aPoseFrame").set_sensitive(False)
+            self.wTree.get_object("aVelFrame").set_sensitive(False)
+            self.wTree.get_object("aFlagsFrame").set_sensitive(False)
+            self.wTree.get_object("vboxCommand").set_sensitive(False)
+            self.wTree.get_object("image1").set_from_file("go75.png")
+            self.wTree.get_object("status").set_text("Astalavista baby. No way Master Yianni's fault")
+            self.wTree.get_object("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
         else:
             # GO
             #self.roscomms.emergencyStop = False
@@ -414,13 +441,13 @@ class SchunkTextControl:
                 self.ack(command.split())
                 while self.roscomms.ackJoint == True:
                     pass
-            self.wTree.get_widget("aPoseFrame").set_sensitive(True)
-            self.wTree.get_widget("aVelFrame").set_sensitive(True)
-            self.wTree.get_widget("aFlagsFrame").set_sensitive(True)
-            self.wTree.get_widget("vboxCommand").set_sensitive(True)
-            self.wTree.get_widget("image1").set_from_file("stop75.png")
-            self.wTree.get_widget("status").set_text("I am back, Master")
-            self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
+            self.wTree.get_object("aPoseFrame").set_sensitive(True)
+            self.wTree.get_object("aVelFrame").set_sensitive(True)
+            self.wTree.get_object("aFlagsFrame").set_sensitive(True)
+            self.wTree.get_object("vboxCommand").set_sensitive(True)
+            self.wTree.get_object("image1").set_from_file("stop75.png")
+            self.wTree.get_object("status").set_text("I am back, Master")
+            self.wTree.get_object("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
 
 
     def load_history(self):
@@ -461,7 +488,7 @@ class SchunkTextControl:
         for spinButton in self.posesframe_spinButtons:
             print spinButton.get_value()
             jointAngles.append(spinButton.get_value())
-        dialog = gtk.FileChooserDialog(title="Save pose",
+        dialog = gtk.FileChooserDialog(title="Save pose (.pos)",
                                        action=gtk.FILE_CHOOSER_ACTION_SAVE,
                                        buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, 
                                                 gtk.STOCK_SAVE, gtk.RESPONSE_OK))
@@ -478,7 +505,7 @@ class SchunkTextControl:
         
 
     def load_pose(self, widget):
-        dialog = gtk.FileChooserDialog(title="Load pose", 
+        dialog = gtk.FileChooserDialog(title="Load pose (.pos)", 
                                        action=gtk.FILE_CHOOSER_ACTION_OPEN, 
                                        buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
                                                  gtk.STOCK_OPEN, gtk.RESPONSE_OK))
@@ -502,6 +529,199 @@ class SchunkTextControl:
         pass
 
 
+    def add_joints_angles_vector(self, widget):
+        name = self.find_unique_name_for_joints_angles_vector()
+        dialogText = self.wTree.get_object("entryJointsAnglesVectorName") 
+        dialogText.set_text(name)
+        self.wTree.get_object("labelDialogJointsAnglesErrorMessage").set_text("")
+        if self.wTree.get_object("comboboxDisplayJointAngles").get_active() >= 0:
+            self.wTree.get_object("radiobuttonDialogAddJointsAnglesAfter").set_sensitive(True)
+            self.wTree.get_object("radiobuttonDialogAddJointsAnglesBefore").set_sensitive(True)
+            name = self.wTree.get_object("comboboxDisplayJointAngles").get_active_text()
+            index = self.dictJointsAngles[name]
+            text = str(self.listJointsAngles[index][0]) + ": " + str(self.listJointsAngles[index][1])
+            self.wTree.get_object("labelDialogAddJointsAnglesIndex").set_text(text)
+        else:
+            self.wTree.get_object("radiobuttonDialogAddJointsAnglesAfter").set_sensitive(False)
+            self.wTree.get_object("radiobuttonDialogAddJointsAnglesBefore").set_sensitive(False)
+            self.wTree.get_object("labelDialogAddJointsAnglesIndex").set_text("")       
+        self.wTree.get_object("dialog1").show()
+        pass
+
+
+    def entryJointsAnglesVectorName_changed(self, widget):
+        name = self.wTree.get_object("entryJointsAnglesVectorName").get_text()
+        if name in self.dictJointsAngles:
+            self.wTree.get_object("labelDialogJointsAnglesErrorMessage").set_text("Label already exists")
+            self.wTree.get_object("labelDialogJointsAnglesErrorMessage").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+        elif name == "":
+            self.wTree.get_object("labelDialogJointsAnglesErrorMessage").set_text("Label is empty")
+            self.wTree.get_object("labelDialogJointsAnglesErrorMessage").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+        else:        
+            self.wTree.get_object("labelDialogJointsAnglesErrorMessage").set_text("")
+
+
+    def dialogJointsAnglesVectorCancel(self, widget):
+        self.wTree.get_object("dialog1").hide()
+        pass
+
+
+    def dialogJointsAnglesVectorOK(self, widget):
+        name = self.wTree.get_object("entryJointsAnglesVectorName").get_text()
+        if name in self.dictJointsAngles:
+            self.wTree.get_object("labelDialogJointsAnglesErrorMessage").set_text("Label already exists")
+            self.wTree.get_object("labelDialogJointsAnglesErrorMessage").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+        elif name == "":
+            self.wTree.get_object("labelDialogJointsAnglesErrorMessage").set_text("Label is empty")
+            self.wTree.get_object("labelDialogJointsAnglesErrorMessage").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+        else:
+            jointsAngles = []
+            for spinButton in self.posesframe_spinButtons:
+                jointsAngles.append(spinButton.get_value())
+            if self.wTree.get_object("radiobuttonDialogAddJointsAnglesEnd").get_active():
+                index = len(self.listJointsAngles)
+            elif self.wTree.get_object("radiobuttonDialogAddJointsAnglesAfter").get_active():
+                index = self.dictJointsAngles[self.wTree.get_object("comboboxDisplayJointAngles").get_active_text()] + 1
+            elif self.wTree.get_object("radiobuttonDialogAddJointsAnglesBefore").get_active():
+                index = self.dictJointsAngles[self.wTree.get_object("comboboxDisplayJointAngles").get_active_text()]
+            else:
+                index = len(self.listJointsAngles)
+            line = [name, jointsAngles]
+            self.dictJointsAngles[name] = index
+            self.listJointsAngles.insert(index, line)
+            self.combolistJointsAngles.insert(index, [name])
+            self.dictJointsAngles_set_appropriate_buttons_sensitive()
+            self.wTree.get_object("dialog1").hide()
+        pass
+    
+    
+    def dialogJointsAnglesName_enter_pressed(self, entry):
+        self.wTree.get_object("buttonDialogJointAnglesNameOK").activate()
+    
+
+    def dialogJointsAnglesVector_catchDeleteEvent(self, widget, data=None):
+        widget.hide()
+        return True
+
+
+    def update_labelDisplayJointAngles(self, widget):
+        try:
+            label = self.wTree.get_object("labelDisplayJointsAngles")
+            name = self.comboboxJointsAngles.get_active_text()
+            index = self.dictJointsAngles[name]
+            angles = self.listJointsAngles[index][1]
+            label.set_text(str(angles))
+            self.dictJointsAngles_set_appropriate_buttons_sensitive()
+        except:
+            pass
+    
+    
+    def copy_to_joints_angles(self, widget):
+        try:
+            name = self.comboboxJointsAngles.get_active_text()
+            index = self.dictJointsAngles[name]
+            angles = self.listJointsAngles[index][1]
+            for i in range(self.numModules):
+                value = angles[i]
+                self.posesframe_spinButtons[i].set_value(value)
+        except:
+            print "Error occured in function <copy_to_joints_angles>"
+        pass
+
+
+    def remove_joints_angles_vector(self, widget):
+        comboIndex = self.comboboxJointsAngles.get_active()
+        if comboIndex >= 0:
+            name = self.comboboxJointsAngles.get_active_text()
+            try:
+                index = self.dictJointsAngles[name]
+                del self.listJointsAngles[index]
+                del self.dictJointsAngles[name]
+                treestore = self.combolistJointsAngles
+                treeiter = treestore.iter_nth_child(None, comboIndex)
+                self.combolistJointsAngles.remove(treeiter)
+                self.wTree.get_object("labelDisplayJointsAngles").set_text("")
+            except:
+                print "bad"
+                return
+        self.dictJointsAngles_set_appropriate_buttons_sensitive()
+        pass
+
+
+    def save_listof_joints_angles(self, widget):        
+        dialog = gtk.FileChooserDialog(title="Save list of joints angles (.lsa)",
+                                       action=gtk.FILE_CHOOSER_ACTION_SAVE,
+                                       buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, 
+                                                gtk.STOCK_SAVE, gtk.RESPONSE_OK))
+        dialog.set_default_response(gtk.RESPONSE_OK)
+        dialog.set_do_overwrite_confirmation(True)
+        response = dialog.run()
+        if response == gtk.RESPONSE_OK:
+            filename = dialog.get_filename()
+            try:
+                w = csv.writer(open(filename, "wb"), delimiter=':', quoting=csv.QUOTE_NONE)
+                w.writerows(self.listJointsAngles)
+            except:
+                print "failed to write to file (save_listof_joints_angles)"
+            #pickle.dump(self.dictJointsAngles, open(filename, "wb"))
+        elif response == gtk.RESPONSE_CANCEL:
+            pass
+        dialog.destroy()
+        pass
+
+
+    def load_listof_joints_angles(self, widget):
+        dialog = gtk.FileChooserDialog(title="Load pose", 
+                                       action=gtk.FILE_CHOOSER_ACTION_OPEN, 
+                                       buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
+                                                 gtk.STOCK_OPEN, gtk.RESPONSE_OK))
+        dialog.set_default_response(gtk.RESPONSE_OK)
+        dialog.select_filename("default.list")
+        response = dialog.run()
+        if response == gtk.RESPONSE_OK:
+            filename = dialog.get_filename()
+            #self.dictJointsAngles = pickle.load(open(filename))
+            try:
+                r = csv.reader(open(filename, "rb"), delimiter=':', quoting=csv.QUOTE_NONE)
+                del self.listJointsAngles[:]
+                for row in r:
+                    key = row[0]
+                    value = map(float, row[1].strip("[]").split(", "))
+                    line = [key, value]
+                    self.listJointsAngles.append(line)
+                self.combolistJointsAngles.clear()
+                for i in range(len(self.listJointsAngles)):
+                    key = str(self.listJointsAngles[i][0])
+                    self.dictJointsAngles[key] = i
+                    self.combolistJointsAngles.append([key])            
+                self.wTree.get_object("labelDisplayJointsAngles").set_text("")                    
+            except:
+                print "load file failed (load_listof_joints_angles)"
+        elif response == gtk.RESPONSE_CANCEL:
+            pass
+        self.dictJointsAngles_set_appropriate_buttons_sensitive()
+        dialog.destroy()
+        pass        
+
+
+    def find_unique_name_for_joints_angles_vector(self):
+        i = 0
+        while True:
+            name = "joints_angles_" + str(i)
+            if name in self.dictJointsAngles:
+                i += 1
+            else:
+                return name
+        pass
+
+
+    def dictJointsAngles_set_appropriate_buttons_sensitive(self):
+        value = (self.comboboxJointsAngles.get_active() >= 0)
+        self.wTree.get_object("buttonListJointsAnglesCopyCurrent").set_sensitive(value)
+        self.wTree.get_object("buttonListJointsAnglesRemoveCurrent").set_sensitive(value)
+        pass
+
+
     def add_words(self, words):
         vocabulary = gtk.ListStore(gobject.TYPE_STRING)
         for word in words:
@@ -512,26 +732,26 @@ class SchunkTextControl:
     def command_changed(self, widget):
         tokens = widget.get_active_text().split()
         if tokens != []:
-            self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
+            self.wTree.get_object("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
         try:
             if tokens[0] == "move":
                 try:
                     module = int(tokens[1])
                     try:
                         string = "Range (deg/s): " + self.limitsStrings[module]
-                        self.wTree.get_widget("status").set_text(string)
+                        self.wTree.get_object("status").set_text(string)
                         try:
                             value = int(tokens[2])
                             if value > self.modules_maxlimits[module] or value < self.modules_minlimits[module]:
-                                self.wTree.get_widget("status").set_text("WARNING: Let me see you licking your elbow mate")
-                                self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF00FF'))
+                                self.wTree.get_object("status").set_text("WARNING: Let me see you licking your elbow mate")
+                                self.wTree.get_object("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF00FF'))
                         except:
                             pass
                     except:
-                        self.wTree.get_widget("status").set_text("WARNING: module does not exist")
-                        self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF00FF'))
+                        self.wTree.get_object("status").set_text("WARNING: module does not exist")
+                        self.wTree.get_object("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF00FF'))
                 except:
-                    self.wTree.get_widget("status").set_text("")
+                    self.wTree.get_object("status").set_text("")
                     
             elif tokens[0] == "vel":
                 try:
@@ -539,34 +759,34 @@ class SchunkTextControl:
                     try:
                         moduleExists = self.modules_maxlimits[module] # this is actually the joint angle limits and not the velocity, but it helps to detect whether the module entered exists
                         string = "Range (deg/s): " + str(self.modules_velmin) + " to " + str(self.modules_velmax)
-                        self.wTree.get_widget("status").set_text(string)
+                        self.wTree.get_object("status").set_text(string)
                         try:
                             value = int(tokens[2])
                             if value > self.modules_velmax or value < self.modules_velmin:
-                                self.wTree.get_widget("status").set_text("WARNING: Hope you have a safe distance mate")
-                                self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF00FF'))
+                                self.wTree.get_object("status").set_text("WARNING: Hope you have a safe distance mate")
+                                self.wTree.get_object("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF00FF'))
                         except:
                             pass
                     except:
-                        self.wTree.get_widget("status").set_text("WARNING: module does not exist")
-                        self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF00FF'))
+                        self.wTree.get_object("status").set_text("WARNING: module does not exist")
+                        self.wTree.get_object("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF00FF'))
                 except:
-                    self.wTree.get_widget("status").set_text("")                
+                    self.wTree.get_object("status").set_text("")                
                 pass
             else:
                 try:
                     module = int(tokens[1])
                     if (module >= self.numModules) or (module < 0):
-                        self.wTree.get_widget("status").set_text("WARNING: module does not exist")
-                        self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF00FF'))
+                        self.wTree.get_object("status").set_text("WARNING: module does not exist")
+                        self.wTree.get_object("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF00FF'))
                 except:
-                    self.wTree.get_widget("status").set_text("")
+                    self.wTree.get_object("status").set_text("")
         except:
             pass
 
 
     def tb_help(self, widget):
-        label = self.wTree.get_widget("labelHelp")
+        label = self.wTree.get_object("labelHelp")
         if widget.get_active():
             label.show()
         else:
@@ -574,7 +794,7 @@ class SchunkTextControl:
 
 
     def help(self):
-        self.wTree.get_widget("tbHelp").set_active(True)
+        self.wTree.get_object("tbHelp").set_active(True)
 
 
     def update_pose_display(self):
@@ -606,11 +826,11 @@ class SchunkTextControl:
                     self.roscomms.ackNumber = module
                     self.roscomms.ackJoint = True
                 else:
-                    self.wTree.get_widget("status").set_text("ERROR: ack failed. Module does not exist")
-                    self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+                    self.wTree.get_object("status").set_text("ERROR: ack failed. Module does not exist")
+                    self.wTree.get_object("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
             except:
-                self.wTree.get_widget("status").set_text("ERROR: move velocity failed. Module does not exist")
-                self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+                self.wTree.get_object("status").set_text("ERROR: move velocity failed. Module does not exist")
+                self.wTree.get_object("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
         except:
             self.roscomms.ackAll = True
 
@@ -635,14 +855,14 @@ class SchunkTextControl:
                     self.roscomms.refNumber = module
                     self.roscomms.refJoint = True
                 else:
-                    self.wTree.get_widget("status").set_text("ERROR: ref failed. Module does not exist")
-                    self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+                    self.wTree.get_object("status").set_text("ERROR: ref failed. Module does not exist")
+                    self.wTree.get_object("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
             except:
-                self.wTree.get_widget("status").set_text("ERROR: ref failed. Module does not exist")
-                self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+                self.wTree.get_object("status").set_text("ERROR: ref failed. Module does not exist")
+                self.wTree.get_object("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
         except:
-            self.wTree.get_widget("status").set_text("ERROR: ref failed. Need to specify module id or 'all'")
-            self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+            self.wTree.get_object("status").set_text("ERROR: ref failed. Need to specify module id or 'all'")
+            self.wTree.get_object("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
 
 
     def cb_move_all(self, widget):
@@ -675,8 +895,8 @@ class SchunkTextControl:
                             valueCheckLimit = float(value) * 180 / pi
                             valueCheckLimit = int(valueCheckLimit)
                         if valueCheckLimit > self.modules_maxlimits[module] or valueCheckLimit < self.modules_minlimits[module]:
-                            self.wTree.get_widget("status").set_text("ERROR: I told you I can't lick my elbow. Move failed")
-                            self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+                            self.wTree.get_object("status").set_text("ERROR: I told you I can't lick my elbow. Move failed")
+                            self.wTree.get_object("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
                             return
                         try:
                             value = float(value)
@@ -698,14 +918,14 @@ class SchunkTextControl:
                         #print self.roscomms.targetPosition
                         self.roscomms.setPosition = True 
                 else:
-                    self.wTree.get_widget("status").set_text("ERROR: move failed. Module does not exist")
-                    self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+                    self.wTree.get_object("status").set_text("ERROR: move failed. Module does not exist")
+                    self.wTree.get_object("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
             except:
-                self.wTree.get_widget("status").set_text("ERROR: move failed. Module does not exist")
-                self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+                self.wTree.get_object("status").set_text("ERROR: move failed. Module does not exist")
+                self.wTree.get_object("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
         except:
-            self.wTree.get_widget("status").set_text("ERROR: move failed. Need to specify module id or 'all'")
-            self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))      
+            self.wTree.get_object("status").set_text("ERROR: move failed. Need to specify module id or 'all'")
+            self.wTree.get_object("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))      
 
 
     def move_all(self):
@@ -739,11 +959,11 @@ class SchunkTextControl:
                 if module >= 0 and module < self.numModules:
                     pass
                 else:
-                    self.wTree.get_widget("status").set_text("ERROR: currents max failed. Module does not exist")
-                    self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+                    self.wTree.get_object("status").set_text("ERROR: currents max failed. Module does not exist")
+                    self.wTree.get_object("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
             except:
-                self.wTree.get_widget("status").set_text("ERROR: currents max failed. Module does not exist")
-                self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+                self.wTree.get_object("status").set_text("ERROR: currents max failed. Module does not exist")
+                self.wTree.get_object("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
         except:
             self.roscomms.maxCurrents = True
     
@@ -779,8 +999,8 @@ class SchunkTextControl:
                     try:
                         value = tokens[2]
                         if int(value) > self.modules_velmax or int(value) < self.modules_velmin:
-                            self.wTree.get_widget("status").set_text("ERROR: Can't go at speed of light. Move velocity failed")
-                            self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+                            self.wTree.get_object("status").set_text("ERROR: Can't go at speed of light. Move velocity failed")
+                            self.wTree.get_object("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
                             return
                         try:
                             value = float(value) * pi / 180
@@ -798,14 +1018,14 @@ class SchunkTextControl:
                         self.roscomms.targetVelocity.velocity = [value]
                         self.roscomms.setVelocity = True 
                 else:
-                    self.wTree.get_widget("status").set_text("ERROR: move velocity failed. Module does not exist")
-                    self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+                    self.wTree.get_object("status").set_text("ERROR: move velocity failed. Module does not exist")
+                    self.wTree.get_object("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
             except:
-                self.wTree.get_widget("status").set_text("ERROR: move velocity failed. Module does not exist")
-                self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+                self.wTree.get_object("status").set_text("ERROR: move velocity failed. Module does not exist")
+                self.wTree.get_object("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
         except:
-            self.wTree.get_widget("status").set_text("ERROR: move velocity failed. Need to specify module id or 'all'")
-            self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+            self.wTree.get_object("status").set_text("ERROR: move velocity failed. Need to specify module id or 'all'")
+            self.wTree.get_object("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
       
 
     def move_vel_all(self):
@@ -830,8 +1050,10 @@ class SchunkTextControl:
 
     def degrees_or_radians(self, widget):
         self.inDegrees = widget.get_active()
+        self.wTree.get_object("hboxListJointsVectors").set_sensitive(self.inDegrees)
+        self.wTree.get_object("buttonAddJointsAnglesVector").set_sensitive(self.inDegrees)
         if self.inDegrees:
-            #self.wTree.get_widget("labelJointAngles").set_text("Joint angles (deg)")
+            #self.wTree.get_object("labelJointAngles").set_text("Joint angles (deg)")
             for i in range(0,self.numModules):
                 value = float(self.posesframe_spinButtons[i].get_value())
                 value *= 180 / pi
@@ -839,7 +1061,7 @@ class SchunkTextControl:
                 self.posesframe_spinButtons[i].set_value(value)
                 self.posesframe_spinButtons[i].update()
         else:
-            #self.wTree.get_widget("labelJointAngles").set_text("Joint angles (rad)")
+            #self.wTree.get_object("labelJointAngles").set_text("Joint angles (rad)")
             for i in range(0,self.numModules):
                 value = float(self.posesframe_spinButtons[i].get_value())
                 value *= pi / 180
@@ -849,90 +1071,105 @@ class SchunkTextControl:
    
 
     def update_flags(self, *args):
-        for i in range(0, self.numModules):
-            label = self.flags[i][self.flagsDict["Position"]]
-            flagRadians = self.roscomms.currentJointStates.position[i]            
-            flag = flagRadians * 180 / pi
-            if (flag < 0.05) and (flag > -0.05):
-                flag = 0.0            
-            string = "%.2f / %.2f" % (flag, flagRadians)
-            label.set_text(string)
-            #flag = round(flag, 2)
-            #label.set_text(str(flag))
-            
-            label = self.flags[i][self.flagsDict["Referenced"]]
-            flag = self.roscomms.currentSchunkStatus.joints[i].referenced
-            label.set_text(str(flag))
-            if not flag:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
-            else:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
+        if (len(self.roscomms.currentJointStates.position) == self.numModules) and (len(self.roscomms.currentSchunkStatus.joints) == self.numModules):
+            for i in range(self.numModules):
+                label = self.flags[i][self.flagsDict["Position"]]
+                flagRadians = self.roscomms.currentJointStates.position[i]            
+                flag = flagRadians * 180 / pi
+                if (flag < 0.05) and (flag > -0.05):
+                    flag = 0.0            
+                string = "%.2f / %.2f" % (flag, flagRadians)
+                label.set_text(string)
+                #flag = round(flag, 2)
+                #label.set_text(str(flag))
                 
-            label = self.flags[i][self.flagsDict["MoveEnd"]]
-            flag = self.roscomms.currentSchunkStatus.joints[i].moveEnd
-            label.set_text(str(flag))
-            if not flag:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
-            else:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
-
-            label = self.flags[i][self.flagsDict["Brake"]]
-            flag = self.roscomms.currentSchunkStatus.joints[i].brake
-            label.set_text(str(flag))
-            if not flag:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
-            else:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
-
-
-            label = self.flags[i][self.flagsDict["Warning"]]
-            flag = self.roscomms.currentSchunkStatus.joints[i].warning
-            label.set_text(str(flag))
-            if flag:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
-            else:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
-
-            label = self.flags[i][self.flagsDict["Current"]]
-            flag = self.roscomms.currentSchunkStatus.joints[i].current
-            string = "%.2f" % flag
-            label.set_text(string)
-            #flag = round(flag,2)
-            #label.set_text(str(flag))
-
-            label = self.flags[i][self.flagsDict["Moving"]]
-            flag = self.roscomms.currentSchunkStatus.joints[i].moving
-            label.set_text(str(flag))
-            if flag:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
-            else:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
-
-            label = self.flags[i][self.flagsDict["PosReached"]]
-            flag = self.roscomms.currentSchunkStatus.joints[i].posReached
-            label.set_text(str(flag))
-            if not flag:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
-            else:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
- 
-            label = self.flags[i][self.flagsDict["Error"]]
-            flag = self.roscomms.currentSchunkStatus.joints[i].error
-            label.set_text(str(flag))
-            if flag:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
-            else:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
-                
-            label = self.flags[i][self.flagsDict["ErrorCode"]]
-            flag = self.roscomms.currentSchunkStatus.joints[i].errorCode
-            label.set_text(str(flag))
-            if flag != 0:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
-            else:
-                label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))           
+                label = self.flags[i][self.flagsDict["Referenced"]]
+                flag = self.roscomms.currentSchunkStatus.joints[i].referenced
+                label.set_text(str(flag))
+                if not flag:
+                    label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+                else:
+                    label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
+                    
+                label = self.flags[i][self.flagsDict["MoveEnd"]]
+                flag = self.roscomms.currentSchunkStatus.joints[i].moveEnd
+                label.set_text(str(flag))
+                if not flag:
+                    label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+                else:
+                    label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
+    
+                label = self.flags[i][self.flagsDict["Brake"]]
+                flag = self.roscomms.currentSchunkStatus.joints[i].brake
+                label.set_text(str(flag))
+                if not flag:
+                    label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+                else:
+                    label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
+    
+    
+                label = self.flags[i][self.flagsDict["Warning"]]
+                flag = self.roscomms.currentSchunkStatus.joints[i].warning
+                label.set_text(str(flag))
+                if flag:
+                    label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+                else:
+                    label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
+    
+                label = self.flags[i][self.flagsDict["Current"]]
+                flag = self.roscomms.currentSchunkStatus.joints[i].current
+                string = "%.2f" % flag
+                label.set_text(string)
+                #flag = round(flag,2)
+                #label.set_text(str(flag))
+    
+                label = self.flags[i][self.flagsDict["Moving"]]
+                flag = self.roscomms.currentSchunkStatus.joints[i].moving
+                label.set_text(str(flag))
+                if flag:
+                    label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+                else:
+                    label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
+    
+                label = self.flags[i][self.flagsDict["PosReached"]]
+                flag = self.roscomms.currentSchunkStatus.joints[i].posReached
+                label.set_text(str(flag))
+                if not flag:
+                    label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+                else:
+                    label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
+     
+                label = self.flags[i][self.flagsDict["Error"]]
+                flag = self.roscomms.currentSchunkStatus.joints[i].error
+                label.set_text(str(flag))
+                if flag:
+                    label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+                else:
+                    label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
+                    
+                label = self.flags[i][self.flagsDict["ErrorCode"]]
+                flag = self.roscomms.currentSchunkStatus.joints[i].errorCode
+                label.set_text(str(flag))
+                if flag != 0:
+                    label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+                else:
+                    label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))           
 
         return True
+
+
+    def on_buttonCopyCurrent_clicked(self, widget):
+        if (len(self.roscomms.currentJointStates.position) == self.numModules) and (len(self.roscomms.currentSchunkStatus.joints) == self.numModules):
+            for i in range(self.numModules):
+                flagRadians = self.roscomms.currentJointStates.position[i]
+                if self.inDegrees:
+                    flag = flagRadians * 180 / pi
+                    if (flag < 0.05) and (flag > -0.05):
+                        flag = 0.0      
+                    self.posesframe_spinButtons[i].set_value(flag)
+                else:
+                    self.posesframe_spinButtons[i].set_value(flagRadians)
+        pass
 
 
     def update_pose(self, *args):
@@ -953,33 +1190,33 @@ class SchunkTextControl:
                 rpy[i] = 0.0
 
         msg = "%.2f" % pose[0]
-        self.wTree.get_widget("poseX").set_text(msg)
+        self.wTree.get_object("poseX").set_text(msg)
         msg = "%.2f" % pose[1]
-        self.wTree.get_widget("poseY").set_text(msg)
+        self.wTree.get_object("poseY").set_text(msg)
         msg = "%.2f" % pose[2]
-        self.wTree.get_widget("poseZ").set_text(msg)
+        self.wTree.get_object("poseZ").set_text(msg)
         msg = "%.2f" % rpy[0]
-        self.wTree.get_widget("poseRoll").set_text(msg)
+        self.wTree.get_object("poseRoll").set_text(msg)
         msg = "%.2f" % rpy[1]
-        self.wTree.get_widget("posePitch").set_text(msg)
+        self.wTree.get_object("posePitch").set_text(msg)
         msg = "%.2f" % rpy[2]
-        self.wTree.get_widget("poseYaw").set_text(msg)
+        self.wTree.get_object("poseYaw").set_text(msg)
         msg = "%.2f" % pose[3]
-        self.wTree.get_widget("poseQx").set_text(msg)
+        self.wTree.get_object("poseQx").set_text(msg)
         msg = "%.2f" % pose[4]
-        self.wTree.get_widget("poseQy").set_text(msg)
+        self.wTree.get_object("poseQy").set_text(msg)
         msg = "%.2f" % pose[5]
-        self.wTree.get_widget("poseQz").set_text(msg)
+        self.wTree.get_object("poseQz").set_text(msg)
         msg = "%.2f" % pose[6]
-        self.wTree.get_widget("poseQw").set_text(msg)
+        self.wTree.get_object("poseQw").set_text(msg)
 
         return True
 
 
     def command_not_found(self, token):
         msg = "Ich spreche nicht Deutch. Was ist '" +  token + "'? Druckte 'Hilfe' fur Vokabelliste"
-        self.wTree.get_widget("status").set_text(msg)
-        self.wTree.get_widget("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
+        self.wTree.get_object("status").set_text(msg)
+        self.wTree.get_object("status").modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0000'))
 
 # delete not needed any more
 #    def get_limits_strings(self):
@@ -1015,7 +1252,7 @@ if __name__ == "__main__":
         sys.exit(1)
     
     gtk.gdk.threads_init()
-    rospy.init_node('schunk_gui_text')
+    rospy.init_node('schunk_gui_text', anonymous=True)
     gui = SchunkTextControl()
     #Thread(target=gui.roscomms.loop).start() # statement is in the constructor of SchunkTextControl, either there or here
     gobject.timeout_add(100, gui.update_flags)

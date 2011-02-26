@@ -28,13 +28,15 @@ class ScitosBase {
 	class OdometryCallbackHandler : public BlackboardDataUpdateCallback
 	{
 	    public:
-	    OdometryCallbackHandler() : BlackboardDataUpdateCallback() {
-		m_base = NULL;
+	    OdometryCallbackHandler(ScitosBase* base) : BlackboardDataUpdateCallback() {
+		m_base = base;
 	    }
 	    
 	    void set_base(ScitosBase* base) {
 		m_base = base;
 	    }
+
+	    ScitosBase* m_base;
 		
 	    private:
 	    // Implementation of BlackboardDataUpdateCallback
@@ -54,7 +56,7 @@ class ScitosBase {
 		}
 	    }
 	    
-	    ScitosBase* m_base;
+
 	};
 
     private:

@@ -248,7 +248,7 @@ bool Kinematics::readJoints(urdf::Model &robot_model) {
         }
         link = robot_model.getLink(link->getParent()->name);
         num_links++;
-        info.link_names.push_back(link->name);
+        info.link_names.insert(info.link_names.begin(), link->name);
     }
 
     joint_min.resize(num_joints);
