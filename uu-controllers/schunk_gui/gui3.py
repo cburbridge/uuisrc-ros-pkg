@@ -545,7 +545,7 @@ class SchunkTextControl:
             self.wTree.get_object("radiobuttonDialogAddJointsAnglesAfter").set_sensitive(False)
             self.wTree.get_object("radiobuttonDialogAddJointsAnglesBefore").set_sensitive(False)
             self.wTree.get_object("labelDialogAddJointsAnglesIndex").set_text("")       
-        self.wTree.get_object("dialog1").show()
+        self.wTree.get_object("dialog1").show()      
         pass
 
 
@@ -637,6 +637,9 @@ class SchunkTextControl:
                 index = self.dictJointsAngles[name]
                 del self.listJointsAngles[index]
                 del self.dictJointsAngles[name]
+                for k in self.dictJointsAngles.iterkeys():
+                    if self.dictJointsAngles[k] > index:
+                        self.dictJointsAngles[k] -= 1
                 treestore = self.combolistJointsAngles
                 treeiter = treestore.iter_nth_child(None, comboIndex)
                 self.combolistJointsAngles.remove(treeiter)
