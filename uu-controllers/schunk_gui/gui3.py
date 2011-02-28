@@ -1161,13 +1161,19 @@ class SchunkTextControl:
     def on_buttonCopyCurrent_clicked(self, widget):
         if (len(self.roscomms.currentJointStates.position) == self.numModules) and (len(self.roscomms.currentSchunkStatus.joints) == self.numModules):
             for i in range(self.numModules):
-                flagRadians = self.roscomms.currentJointStates.position[i]
+                flagRadians = float(self.roscomms.currentJointStates.position[i])
                 if self.inDegrees:
                     flag = flagRadians * 180 / pi
                     if (flag < 0.05) and (flag > -0.05):
-                        flag = 0.0      
+                        flag = 0.0
+#Neither work                        
+#                    string = "%.4f" % flag
+#                    flag = float(string)
+# or
+#                    flag = round(flag, 4)
                     self.posesframe_spinButtons[i].set_value(flag)
                 else:
+#                    flagRadians = round(flagRadians, 4)
                     self.posesframe_spinButtons[i].set_value(flagRadians)
         pass
 
