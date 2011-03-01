@@ -44,7 +44,7 @@ class Kinematics {
 //      KDL::ChainIkSolverVel_pinv* ik_solver_vel;	
 // 	KDL::ChainIkSolverVel_wdls* ik_solver_vel;
 //      KDL::ChainIkSolverVel_pinv_givens* ik_solver_vel;
-	KDL::ChainIkSolverVel* ik_solver_vel;
+        KDL::ChainIkSolverVel* ik_solver_vel;
 
         ros::ServiceServer ik_service, ik_vel_service, ik_solver_info_service;
         ros::ServiceServer fk_service,fk_solver_info_service;
@@ -138,19 +138,19 @@ bool Kinematics::init() {
     // Get Solver Parameters
     int maxIterations;
     double epsilon;
+    double lambda;
 
     nh_private.param("maxIterations", maxIterations, 1000);
     nh_private.param("epsilon", epsilon, 1e-2);
+    nh_private.param("lambda", lambda, 0.01);
+
+
+    ROS_INFO("IK Solver, maxIterations: %d, epsilon: %f, lambda: %f", maxIterations, epsilon, lambda);
 
     // Build Solvers
     fk_solver = new KDL::ChainFkSolverPos_recursive(chain);
     
-     //PEZZOTTO WAS HERE
-    double eps=0.00001;
-    double lambda = 0.01;
-//     ik_solver_vel = new KDL::ChainIkSolverVel_pinv(chain);   
-    ik_solver_vel = new KDL::ChainIkSolverVel_wdls(chain, eps);        
-//  ik_solver_vel = new KDL::ChainIkSolverVel_pinv_givens(chain);
+    ik_solver_vel = new KDL::ChainIkSolverVel_wdls(chain, epsilon, maxIterations);
 
     Eigen::MatrixXd jointWeights(7,7);
     for (uint i =0; i<7; i++)
