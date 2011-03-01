@@ -15,8 +15,7 @@
 #include <trajectory_msgs/JointTrajectory.h>
 #include <trajectory_msgs/JointTrajectoryPoint.h>
 #include <boost/thread.hpp>
-#include <metralabs_ros/StartTrajectory.h>
-#include <metralabs_ros/StopTrajectory.h>
+#include <pr2_controllers_msgs/JointTrajectoryControllerState.h>
 
 //#include "PowerCube5.h"
 #include "PowerCube.h"
@@ -30,15 +29,56 @@ public:
 		arm = NULL;
 	}
 
+	void init(ros::NodeHandle& n, PowerCube* p_arm, std::map<std::string, unsigned int>& nmap) {
+
+		arm = p_arm;
+		nameToNumber = nmap;
+
+		state_publisher = n.advertise<pr2_controllers_msgs::JointTrajectoryControllerState>("state", 1);
+
+		std::map<std::string, unsigned int>::iterator it;
+		for (it = nameToNumber.begin(); it != nameToNumber.end(); it++) {
+			state_msg.joint_names.push_back((*it).first );
+		}
+		state_msg.desired.positions.resize(nameToNumber.size());
+		state_msg.desired.velocities.resize(nameToNumber.size());
+		state_msg.desired.accelerations.resize(nameToNumber.size());
+		state_msg.actual.positions.resize(nameToNumber.size());
+		state_msg.actual.velocities.resize(nameToNumber.size());
+		state_msg.error.positions.resize(nameToNumber.size());
+		state_msg.error.velocities.resize(nameToNumber.size());
+	}
+
 	void main() {
 		while (true) {
 			{
 				boost::unique_lock<boost::mutex> lock(mut);
+				waiting = true;
+				bool gotit = false;
 				while (!run){
-					cond.wait(lock);
+					gotit = cond.timed_wait(lock, boost::posix_time::milliseconds(100));
+					if (! gotit) {
+						//Let's make people happy by publishing a state message
+						for (unsigned int joint_i = 0; joint_i<nameToNumber.size(); joint_i++) {
+							//fill in the message
+							state_msg.desired = state_msg.actual;
+							state_msg.actual.positions[joint_i] = arm->mManipulator.getModules().at(joint_i).status_pos/180.0 * M_PI;
+							state_msg.actual.velocities[joint_i] = 0;
+							state_msg.actual.time_from_start = ros::Duration(0);
+						}
+
+						//finally publish the state message
+						state_msg.header.stamp = ros::Time::now();
+						state_publisher.publish(state_msg);
+					}
+
 				}
 			}
 			//I hope the mutex is unlocked now
+			{
+				boost::unique_lock<boost::mutex> lock(mut);
+				waiting = false;
+			}
 
 			ROS_INFO("Trajectory thread is starting its job");
 			follow_trajectory();
@@ -54,13 +94,12 @@ public:
 		return; //just to be sure the thread is terminated
 	}
 
-	bool start(trajectory_msgs::JointTrajectory& newtraj) {
+	void start(const trajectory_msgs::JointTrajectory& newtraj) {
 		{
 			boost::unique_lock<boost::mutex> lock(mut);
-
 			if (run) {
 				ROS_WARN("You need to stop a trajectory before issuing a new command. Ignoring the new command");
-				return false;
+				return;
 			}
 
 			traj = newtraj;
@@ -68,7 +107,6 @@ public:
 		}
 		ROS_INFO("Waking up the thread");
 		cond.notify_one();
-		return true;
 	}
 
 	void stop() {
@@ -81,13 +119,15 @@ public:
 		return run;
 	}
 
-
-	PowerCube* arm;
-	std::map<std::string, unsigned int> nameToNumber;
+	bool is_waiting() {
+		boost::unique_lock<boost::mutex> lock(mut);
+		return waiting;
+	}
 
 private:
 
 	void follow_trajectory() {
+		//I am not entirely sure that this code actually looks like real-time
 		ros::Time now = ros::Time::now();
 		for (unsigned int step=0; step<traj.points.size(); step++) {
 			trajectory_msgs::JointTrajectoryPoint& point = traj.points[step];
@@ -103,22 +143,34 @@ private:
 					}
 				}
 			}
-
 			//now apply speed to each joint
 			for (unsigned int joint_i = 0; joint_i<traj.joint_names.size(); joint_i++) {
 
 				unsigned int id = nameToNumber[traj.joint_names[joint_i]];
 				arm->pc_move_velocity(id, point.velocities[joint_i]/M_PI * 180.0);
 
+				//fill in the message
+				state_msg.desired = state_msg.actual;
+				state_msg.actual.positions[joint_i] = arm->mManipulator.getModules().at(joint_i).status_pos/180.0 * M_PI;
+				state_msg.actual.velocities[joint_i] = point.velocities[joint_i];
+				state_msg.actual.time_from_start = point.time_from_start;
 			}
-		}
 
+			//finally publish the state message
+			state_msg.header.stamp = ros::Time::now();
+			state_publisher.publish(state_msg);
+		}
 	}
 
+	PowerCube* arm;
+	std::map<std::string, unsigned int> nameToNumber;
 	trajectory_msgs::JointTrajectory traj;
 	bool run;
+	bool waiting;
 	boost::condition_variable cond;
 	boost::mutex mut;
+	pr2_controllers_msgs::JointTrajectoryControllerState state_msg;
+	ros::Publisher state_publisher;
 
 };
 
@@ -148,7 +200,7 @@ public:
 
 	void init() {
 		// Initialise the arm model parser and find out what non-fixed joins are present
-		m_armModel.initParam("schunk_description");
+		m_armModel.initParam("robot_description");
 		std::map<std::string, boost::shared_ptr<urdf::Joint> >::iterator mapElement;
 		for (mapElement = m_armModel.joints_.begin(); mapElement!=m_armModel.joints_.end(); mapElement++) {
 			if ((*mapElement).second.get()->type != urdf::Joint::FIXED)
@@ -167,6 +219,7 @@ public:
 		// the URDF!!!
 		m_currentJointState.name.resize(m_joints.size());
 		m_currentJointState.position.resize(m_joints.size());
+		m_currentJointState.velocity.resize(m_joints.size());
 		for (unsigned int i=0;i<m_joints.size();i++) {
 			m_currentJointState.name[i] = m_joints[i]->name;
 			m_nameToNumber[m_joints[i]->name] = i;
@@ -182,8 +235,9 @@ public:
 			m_schunkStatus.joints.push_back(status);
 		}
 
-		m_executer.arm = &m_powerCube;
-		m_executer.nameToNumber = m_nameToNumber;
+//		m_executer.arm = &m_powerCube;
+//		m_executer.nameToNumber = m_nameToNumber;
+		m_executer.init(m_node, &m_powerCube, m_nameToNumber);
 
 		ROS_INFO("Starting the thread");
 		boost::thread(start_thread, &m_executer);
@@ -271,6 +325,7 @@ public:
 		m_currentJointState.header.stamp = ros::Time::now();
 		for (unsigned int i=0;i<m_currentJointState.name.size(); i++) {
 			m_currentJointState.position[i]=m_powerCube.mManipulator.getModules().at(i).status_pos/180.0 * M_PI;
+			m_currentJointState.velocity[i]=0.0;
 		}
 		m_currentJointStatePublisher.publish(m_currentJointState);
 	}
@@ -330,16 +385,13 @@ public:
 		}
 	}
 
-	bool srv_startTrajectory(metralabs_ros::StartTrajectory::Request& req, metralabs_ros::StartTrajectory::Response& response) {
-		ROS_INFO("Schunk Server: starting trajectory");
-		response.ok = m_executer.start(req.traj);
-		return true;
-	}
-
-	bool srv_stopTrajectory(metralabs_ros::StopTrajectory::Request& req, metralabs_ros::StopTrajectory::Response& response) {
-		ROS_INFO("Schunk Server: stopping trajectory");
+	void commandTrajectory(const trajectory_msgs::JointTrajectory traj) {
+		ROS_INFO("Schunk Server: received a new trajectory");
 		m_executer.stop();
-		return true;
+		while (! m_executer.is_waiting() ) {
+			ROS_INFO("Waiting for the controller to be ready..");
+		}
+		m_executer.start(traj);
 	}
 
 };
@@ -370,7 +422,7 @@ class RosScitosBase {
 	    geometry_msgs::TransformStamped odom_trans;
 	    odom_trans.header.stamp = currentTime;
 	    odom_trans.header.frame_id = "/odom";
-	    odom_trans.child_frame_id = "/schunk/position/ScitosBase";
+	    odom_trans.child_frame_id = "/ScitosBase";
 
 	    odom_trans.transform.translation.x = x;
 	    odom_trans.transform.translation.y = y;
@@ -384,7 +436,7 @@ class RosScitosBase {
 	    nav_msgs::Odometry odom;
 	    odom.header.stamp = currentTime;
 	    odom.header.frame_id = "/odom";
-	    odom.child_frame_id = "/schunk/position/ScitosBase";
+	    odom.child_frame_id = "/ScitosBase";
 
 	    //set the position
 	    odom.pose.pose.position.x = x;
@@ -453,8 +505,8 @@ int main(int argc, char **argv)
 	ros::Subscriber targetAcceleration = n.subscribe("/targetAcceleration", 1, &SchunkServer::cb_targetAcceleration, &server);
 //	ros::Subscriber startPosition = n.subscribe("/startPosition", 1, &PubsAndSubs::cb_startPosition, &services);
 
-	ros::ServiceServer startTrajectory = n.advertiseService("/schunk/target_traj/start", &SchunkServer::srv_startTrajectory, &server);
-	ros::ServiceServer stopTrajectory = n.advertiseService("/schunk/target_traj/stop", &SchunkServer::srv_stopTrajectory, &server);
+	ros::Subscriber command = n.subscribe("command", 1, &SchunkServer::commandTrajectory, &server);
+
   
 	ros::Rate loop_rate(30);
 

@@ -1,0 +1,4 @@
+default_collision_operations:
+  - object1: schunk
+    object2: ScitosBase
+    operation: disable

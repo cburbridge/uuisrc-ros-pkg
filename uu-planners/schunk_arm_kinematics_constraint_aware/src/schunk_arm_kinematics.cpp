@@ -15,7 +15,9 @@
 #include <kinematics_msgs/GetPositionIK.h>
 #include <kinematics_msgs/GetKinematicSolverInfo.h>
 #include <kinematics_msgs/KinematicSolverInfo.h>
-#include "schunk_kinematics/GetVelocityIK.h"
+#include "schunk_arm_kinematics_constraint_aware/GetVelocityIK.h"
+
+#include "schunk_arm_kinematics_constraint_aware/schunk_arm_kinematics.h"
 
 using std::string;
 
@@ -25,89 +27,13 @@ static const std::string FK_SERVICE = "get_fk";
 static const std::string IK_INFO_SERVICE = "get_ik_solver_info";
 static const std::string FK_INFO_SERVICE = "get_fk_solver_info";
 
-class Kinematics {
-    public:
-        Kinematics();
-        bool init();
-
-    private:
-        ros::NodeHandle nh, nh_private;
-        std::string root_name, tip_name;
-        KDL::JntArray joint_min, joint_max;
-        KDL::Chain chain;
-        unsigned int num_joints;
-        unsigned int num_links;
-
-        KDL::ChainFkSolverPos_recursive* fk_solver;
-        KDL::ChainIkSolverPos_NR_JL *ik_solver_pos;
-	//PEZZOTTO WAS HERE!!!
-//      KDL::ChainIkSolverVel_pinv* ik_solver_vel;	
-// 	KDL::ChainIkSolverVel_wdls* ik_solver_vel;
-//      KDL::ChainIkSolverVel_pinv_givens* ik_solver_vel;
-        KDL::ChainIkSolverVel* ik_solver_vel;
-
-        ros::ServiceServer ik_service, ik_vel_service, ik_solver_info_service;
-        ros::ServiceServer fk_service,fk_solver_info_service;
-
-        tf::TransformListener tf_listener;
-
-        kinematics_msgs::KinematicSolverInfo info;
-
-        bool loadModel(const std::string xml);
-        bool readJoints(urdf::Model &robot_model);
-        int getJointIndex(const std::string &name);
-        int getKDLSegmentIndex(const std::string &name);
-
-        /**
-         * @brief This is the basic IK service method that will compute and return an IK solution.
-         * @param A request message. See service definition for GetPositionIK for more information on this message.
-         * @param The response message. See service definition for GetPositionIK for more information on this message.
-         */
-        bool getPositionIK(kinematics_msgs::GetPositionIK::Request &request,
-                           kinematics_msgs::GetPositionIK::Response &response);
-
-        /**
-		 * @brief This is the basic IK service method that will compute and return an IK solution.
-		 * @param A request message. See service definition for GetPositionIK for more information on this message.
-		 * @param The response message. See service definition for GetPositionIK for more information on this message.
-		 */
-		bool getVelocityIK(schunk_kinematics::GetVelocityIK::Request &request,
-						   schunk_kinematics::GetVelocityIK::Response &response);
-
-        /**
-         * @brief This is the basic kinematics info service that will return information about the kinematics node.
-         * @param A request message. See service definition for GetKinematicSolverInfo for more information on this message.
-         * @param The response message. See service definition for GetKinematicSolverInfo for more information on this message.
-         */
-        bool getIKSolverInfo(kinematics_msgs::GetKinematicSolverInfo::Request &request,
-                             kinematics_msgs::GetKinematicSolverInfo::Response &response);
-
-        /**
-         * @brief This is the basic kinematics info service that will return information about the kinematics node.
-         * @param A request message. See service definition for GetKinematicSolverInfo for more information on this message.
-         * @param The response message. See service definition for GetKinematicSolverInfo for more information on this message.
-         */
-        bool getFKSolverInfo(kinematics_msgs::GetKinematicSolverInfo::Request &request,
-                             kinematics_msgs::GetKinematicSolverInfo::Response &response);
-
-        /**
-         * @brief This is the basic forward kinematics service that will return information about the kinematics node.
-         * @param A request message. See service definition for GetPositionFK for more information on this message.
-         * @param The response message. See service definition for GetPositionFK for more information on this message.
-         */
-        bool getPositionFK(kinematics_msgs::GetPositionFK::Request &request,
-                           kinematics_msgs::GetPositionFK::Response &response);
-};
-
-
-
-Kinematics::Kinematics(): nh_private ("~") {
+SchunkArmKinematics::SchunkArmKinematics(): nh_private ("~") {
 }
 
-bool Kinematics::init() {
+bool SchunkArmKinematics::init() {
     // Get URDF XML
     std::string urdf_xml, full_urdf_xml;
-    nh.param("urdf_xml",urdf_xml,std::string("schunk_description"));
+    nh.param("urdf_xml",urdf_xml,std::string("robot_description"));
     nh.searchParam(urdf_xml,full_urdf_xml);
     ROS_DEBUG("Reading xml file from parameter server");
     std::string result;
@@ -193,16 +119,16 @@ bool Kinematics::init() {
             *fk_solver, *ik_solver_vel, maxIterations, epsilon);
 
     ROS_INFO("Advertising services");
-    fk_service = nh_private.advertiseService(FK_SERVICE,&Kinematics::getPositionFK,this);
-    ik_service = nh_private.advertiseService(IK_SERVICE,&Kinematics::getPositionIK,this);
-    ik_vel_service = nh_private.advertiseService(IK_VEL_SERVICE,&Kinematics::getVelocityIK,this);
-    ik_solver_info_service = nh_private.advertiseService(IK_INFO_SERVICE,&Kinematics::getIKSolverInfo,this);
-    fk_solver_info_service = nh_private.advertiseService(FK_INFO_SERVICE,&Kinematics::getFKSolverInfo,this);
+    fk_service = nh_private.advertiseService(FK_SERVICE,&SchunkArmKinematics::getPositionFK,this);
+    ik_service = nh_private.advertiseService(IK_SERVICE,&SchunkArmKinematics::getPositionIK,this);
+    ik_vel_service = nh_private.advertiseService(IK_VEL_SERVICE,&SchunkArmKinematics::getVelocityIK,this);
+    ik_solver_info_service = nh_private.advertiseService(IK_INFO_SERVICE,&SchunkArmKinematics::getIKSolverInfo,this);
+    fk_solver_info_service = nh_private.advertiseService(FK_INFO_SERVICE,&SchunkArmKinematics::getFKSolverInfo,this);
 
     return true;
 }
 
-bool Kinematics::loadModel(const std::string xml) {
+bool SchunkArmKinematics::loadModel(const std::string xml) {
     urdf::Model robot_model;
     KDL::Tree tree;
 
@@ -227,7 +153,7 @@ bool Kinematics::loadModel(const std::string xml) {
     return true;
 }
 
-bool Kinematics::readJoints(urdf::Model &robot_model) {
+bool SchunkArmKinematics::readJoints(urdf::Model &robot_model) {
     num_joints = 0;
     num_links = 0;
     // get joint maxs and mins
@@ -291,7 +217,7 @@ bool Kinematics::readJoints(urdf::Model &robot_model) {
 }
 
 
-int Kinematics::getJointIndex(const std::string &name) {
+int SchunkArmKinematics::getJointIndex(const std::string &name) {
     for (unsigned int i=0; i < info.joint_names.size(); i++) {
         if (info.joint_names[i] == name)
             return i;
@@ -299,7 +225,7 @@ int Kinematics::getJointIndex(const std::string &name) {
     return -1;
 }
 
-int Kinematics::getKDLSegmentIndex(const std::string &name) {
+int SchunkArmKinematics::getKDLSegmentIndex(const std::string &name) {
     int i=0; 
     while (i < (int)chain.getNrOfSegments()) {
         if (chain.getSegment(i).getName() == name) {
@@ -311,7 +237,7 @@ int Kinematics::getKDLSegmentIndex(const std::string &name) {
 }
 
 
-bool Kinematics::getPositionIK(kinematics_msgs::GetPositionIK::Request &request,
+bool SchunkArmKinematics::getPositionIK(kinematics_msgs::GetPositionIK::Request &request,
                                kinematics_msgs::GetPositionIK::Response &response) {
 
     geometry_msgs::PoseStamped pose_msg_in = request.ik_request.pose_stamped;
@@ -357,8 +283,8 @@ bool Kinematics::getPositionIK(kinematics_msgs::GetPositionIK::Request &request,
 /**
  *   Get the inverse kinematics with velocity info - added by Chris
  */
-bool Kinematics::getVelocityIK(schunk_kinematics::GetVelocityIK::Request &request,
-								schunk_kinematics::GetVelocityIK::Response &response) {
+bool SchunkArmKinematics::getVelocityIK(schunk_arm_kinematics_constraint_aware::GetVelocityIK::Request &request,
+		schunk_arm_kinematics_constraint_aware::GetVelocityIK::Response &response) {
 
 //    geometry_msgs::TwistStamped pose_msg_in = request.ik_request.twist;
 //    tf::Stamped<tf::Pose> transform;
@@ -413,19 +339,19 @@ bool Kinematics::getVelocityIK(schunk_kinematics::GetVelocityIK::Request &reques
     }
 }
 
-bool Kinematics::getIKSolverInfo(kinematics_msgs::GetKinematicSolverInfo::Request &request,
+bool SchunkArmKinematics::getIKSolverInfo(kinematics_msgs::GetKinematicSolverInfo::Request &request,
                                  kinematics_msgs::GetKinematicSolverInfo::Response &response) {
     response.kinematic_solver_info = info;
     return true;
 }
 
-bool Kinematics::getFKSolverInfo(kinematics_msgs::GetKinematicSolverInfo::Request &request,
+bool SchunkArmKinematics::getFKSolverInfo(kinematics_msgs::GetKinematicSolverInfo::Request &request,
                                  kinematics_msgs::GetKinematicSolverInfo::Response &response) {
     response.kinematic_solver_info = info;
     return true;
 }
 
-bool Kinematics::getPositionFK(kinematics_msgs::GetPositionFK::Request &request,
+bool SchunkArmKinematics::getPositionFK(kinematics_msgs::GetPositionFK::Request &request,
                                kinematics_msgs::GetPositionFK::Response &response) {
     KDL::Frame p_out;
     KDL::JntArray jnt_pos_in;
@@ -473,15 +399,5 @@ bool Kinematics::getPositionFK(kinematics_msgs::GetPositionFK::Request &request,
     return true;
 }
 
-int main(int argc, char **argv) {
-    ros::init(argc, argv, "schunk_kinematics");
-    Kinematics k;
-    if (k.init()<0) {
-        ROS_ERROR("Could not initialize kinematics node");
-        return -1;
-    }
 
-    ros::spin();
-    return 0;
-}
 
