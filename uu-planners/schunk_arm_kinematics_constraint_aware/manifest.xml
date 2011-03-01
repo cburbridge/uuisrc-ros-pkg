@@ -1,0 +1,34 @@
+<package>
+  <description brief="schunk_arm_kinematics_constraint_aware">
+
+     schunk_arm_kinematics_constraint_aware
+
+  </description>
+  <author>Lorenzo Riano</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/schunk_arm_kinematics_constraint_aware</url>
+
+  <depend package="roscpp"/>
+  <depend package="kdl"/>
+  <depend package="eigen"/>
+  <depend package="angles"/>
+  <depend package="tf_conversions"/>
+  <depend package="urdf"/>
+  <depend package="geometry_msgs"/>
+  <depend package="kdl_parser"/>
+
+  <depend package="kinematics_msgs" />  
+  <depend package="tf"/>
+  <depend package="sensor_msgs"/>
+  <depend package="kinematics_msgs"/>
+  <depend package="motion_planning_msgs"/>
+  <depend package="collision_space"/>
+  <depend package="planning_models"/>
+  <depend package="planning_environment"/>
+  <depend package="mapping_msgs"/>
+  <depend package="visualization_msgs" />
+
+</package>
+
+

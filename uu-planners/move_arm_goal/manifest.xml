@@ -1,0 +1,19 @@
+<package>
+  <description brief="move_arm_goal">
+
+     move_arm_goal
+
+  </description>
+  <author>Lorenzo Riano</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/move_arm_goal</url>
+  <depend package="move_arm_msgs"/>
+  <depend package="actionlib"/>
+  <depend package="kinematics_msgs"/>
+  <depend package="geometry_msgs"/>
+
+</package>
+
+
+

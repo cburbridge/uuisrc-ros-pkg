@@ -1,0 +1,12 @@
+# A service call to carry out an inverse kinematics computation for velocity
+# The inverse kinematics request
+schunk_arm_kinematics_constraint_aware/VelocityIKRequest ik_request
+# Maximum allowed time for IK calculation
+duration timeout
+---
+# The returned solution 
+# (in the same order as the list of joints specified in the IKRequest message)
+motion_planning_msgs/RobotState solution
+
+motion_planning_msgs/ArmNavigationErrorCodes error_code
+

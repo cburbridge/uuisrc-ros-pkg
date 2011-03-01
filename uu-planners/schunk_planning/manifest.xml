@@ -1,0 +1,20 @@
+<package>
+  <description brief="schunk_planning">
+
+    A collection of packages and launch files to enable planning on a Schunk Arm 
+
+  </description>
+  <author>Lorenzo Riano lorenzo.riano@gmail.com</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/schunk_planning</url>
+  <depend package="ompl_planning"/>
+  <depend package="planning_environment"/>
+  <depend package="trajectory_filter_server"/>
+  <depend package="joint_trajectory_action"/>
+  <depend package="move_arm"/>
+  <depend package="collision_map"/>
+
+</package>
+
+

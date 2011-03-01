@@ -1,0 +1,17 @@
+<package>
+  <description brief="empty_pointcloud">
+
+     empty_pointcloud
+
+  </description>
+  <author>Lorenzo Riano</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/empty_pointcloud</url>
+  <depend package="roscpp"/>
+  <depend package="roslib"/>
+  <depend package="sensor_msgs"/>
+
+</package>
+
+

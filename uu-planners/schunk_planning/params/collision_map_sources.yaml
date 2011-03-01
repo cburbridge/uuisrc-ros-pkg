@@ -1,0 +1,5 @@
+cloud_sources:
+  - name: empty_cloud
+    frame_subsample: 1
+    point_subsample: 1
+    sensor_frame: /ScitosBase

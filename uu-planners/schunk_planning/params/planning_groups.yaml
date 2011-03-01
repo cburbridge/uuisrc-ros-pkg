@@ -1,0 +1,33 @@
+groups:
+ - name: schunk
+   joints:
+          Joint0
+          Joint1
+          Joint2      
+          Joint3
+          Joint4
+          Joint5
+          Joint6
+   links:
+          ScitosBase
+          PAM112_BaseConector
+          P90_1_LowerCube
+          P90_1_UpperCube
+          PAM102
+          P90_2_LowerCube
+          P90_2_UpperCube
+          PAM121
+          P90_3_LowerCube
+          P90_3_UpperCube
+          PAM110
+          P70_1_LowerCube
+          P70_1_UpperCube
+          PAM120
+          P70_2_LowerCube
+          P70_2_UpperCube
+          PAM100
+          PW70Hinge
+          PW70Box
+          PW70Rotor
+          GripperBox
+          Camera

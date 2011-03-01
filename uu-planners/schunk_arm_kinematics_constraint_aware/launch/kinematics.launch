@@ -1,0 +1,16 @@
+<launch>
+
+    <!-- Load the arm kinematics with the correct tip and base conectors -->
+  <node pkg="schunk_arm_kinematics_constraint_aware" type="schunk_arm_kinematics_constraint_aware" name="schunk_arm_kinematics_constraint_aware" output="screen">      
+	<remap from="robot_description" to="robot_description" />
+        <param name="tip_name" type="string" value="GripperBox" />
+	<param name="root_name" type="string" value="PAM112_BaseConector" />
+	<param name="maxIterations" type="int" value="20000"/>
+	<param name="epsilon" type="double" value="1e-5"/>
+	<param name="lambda" type="double" value="0.01"/>        
+	<param name="group" type="string" value="schunk"/>
+	<param name="free_angle" type="int" value="2" />
+	<param name="search_discretization" type="double" value="0.1" />	
+  </node>
+
+</launch>

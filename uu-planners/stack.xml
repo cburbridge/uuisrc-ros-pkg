@@ -1,0 +1,9 @@
+<stack>
+  <description brief="uu-planners">uu-planners</description>
+  <author>Maintained by Lorenzo Riano</author>
+  <license>BSD</license>  
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/uu-planners</url>
+  <depend stack="ros" />
+
+</stack>
