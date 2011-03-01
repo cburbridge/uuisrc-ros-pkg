@@ -20,6 +20,7 @@
   <depend package="geometry_msgs"/>
   <depend package="nav_msgs"/>
   <depend package="trajectory_msgs"/>
+  <depend package="pr2_controllers_msgs"/>
 
 
 </package>
