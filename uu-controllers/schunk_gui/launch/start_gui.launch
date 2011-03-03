@@ -1,0 +1,9 @@
+<launch>
+
+<node name="$(anon schunk_gui)" pkg="schunk_gui" type="gui3.py" output="screen">
+	<param name="tip_name" value="palm" />
+	<param name="root_name" value="ScitosBase" />
+</node>
+
+
+</launch>
