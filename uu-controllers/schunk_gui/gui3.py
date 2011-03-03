@@ -41,6 +41,21 @@ class RosCommunication():
         self.currentJointStates=JointState()
         self.currentSchunkStatus=SchunkStatus()
         self.dependent_joints = rospy.get_param("dependent_joints", {})
+       
+        if rospy.has_param("~tip_name"):
+            print "YEEEE"
+       
+        try: 
+            self.__tip = rospy.get_param("~tip_name")
+        except KeyError:
+            rospy.logwarn("No tip name specified, end effector position won't work")
+            self.__tip = "none"
+        
+        try: 
+            self.__root = rospy.get_param("~root_name")
+        except KeyError:
+            rospy.logwarn("No root name specified, end effector position won't work")
+            self.__root = "none"
         
         # Find all non-fixed joints
         self.numModules = 0
@@ -159,8 +174,8 @@ class RosCommunication():
         #TODO: these frames are hard coded - need to make them parameters
 #        frame_from = '/schunk/position/PAM112_BaseConector'
 #        frame_to = '/schunk/position/GripperBox'
-        frame_from = 'PAM112_BaseConector'
-        frame_to = 'GripperBox'
+        frame_from = self.__root
+        frame_to = self.__tip
 
         try:
             now = rospy.Time(0) # just get the latest rospy.Time.now()
@@ -610,7 +625,10 @@ class SchunkTextControl:
             name = self.comboboxJointsAngles.get_active_text()
             index = self.dictJointsAngles[name]
             angles = self.listJointsAngles[index][1]
-            label.set_text(str(angles))
+            
+            pezz_text = ' , '.join(["%.2f" %i for i in angles])
+#            label.set_text(str(angles))
+            label.set_text(pezz_text)
             self.dictJointsAngles_set_appropriate_buttons_sensitive()
         except:
             pass
@@ -1261,7 +1279,7 @@ if __name__ == "__main__":
         sys.exit(1)
     
     gtk.gdk.threads_init()
-    rospy.init_node('schunk_gui_text', anonymous=True)
+    rospy.init_node('schunk_gui')
     gui = SchunkTextControl()
     #Thread(target=gui.roscomms.loop).start() # statement is in the constructor of SchunkTextControl, either there or here
     gobject.timeout_add(100, gui.update_flags)
