@@ -13,30 +13,32 @@ int main(int argc, char** argv)
 
 	//Let's just add a single point to make everybody happy
 
+	double depth = 0.4;
+
 	for (double v = -1.0; v<1.0; v += 0.01) {
 		geometry_msgs::Point32 point;
-		point.x = 0.4;
+		point.x = depth;
 		point.y = -v;
 		point.z = 1.37;
 		msg.points.push_back(point);
 	}
 	for (double v = -1.0; v<1.0; v += 0.01) {
 		geometry_msgs::Point32 point;
-		point.x = 0.4;
+		point.x = depth;
 		point.y = -v;
-		point.z = .97;
+		point.z = 0.97;
 		msg.points.push_back(point);
 	}
 	for (double v = .77; v<1.47; v += 0.01) {
 		geometry_msgs::Point32 point;
-		point.x = 0.4;
+		point.x = depth;
 		point.y = -0.25;
 		point.z = v;
 		msg.points.push_back(point);
 	}
 	for (double v = .77; v<1.47; v += 0.01) {
 		geometry_msgs::Point32 point;
-		point.x = 0.4;
+		point.x = depth;
 		point.y = 0.25;
 		point.z = v;
 		msg.points.push_back(point);

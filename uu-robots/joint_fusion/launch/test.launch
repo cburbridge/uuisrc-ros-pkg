@@ -1,0 +1,16 @@
+<launch>
+
+<node name="joint_fusion" pkg="joint_fusion" type="joint_fusion.py" output="screen">
+	<param name="rate" value="10" />
+	<remap from="source1" to="/schunk/position/joint_states" />
+	<remap from="source2" to="/srh/position/joint_states" />
+	<remap from="joint_states" to="/schunk_hand/position/joint_states" />
+</node>
+
+<node pkg="robot_state_publisher" type="state_publisher" name="schunk_hand_state_publisher" >
+    <remap from="robot_description" to="robot_description"/>
+    <remap from="joint_states" to="/schunk_hand/position/joint_states" />
+    <param name="publish_frequency" type="double" value="10.0" />
+</node>
+
+</launch>
