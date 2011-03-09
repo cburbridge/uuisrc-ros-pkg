@@ -1,0 +1,7 @@
+/.FollowTrajectory.asd-dep
+/.StartTrajectory.asd-dep
+/.StopTrajectory.asd-dep
+/FollowTrajectory.lisp
+/StartTrajectory.lisp
+/StopTrajectory.lisp
+/metralabs_ros-srv.asd

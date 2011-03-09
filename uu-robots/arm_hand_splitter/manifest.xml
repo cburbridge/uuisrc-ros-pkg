@@ -1,0 +1,19 @@
+<package>
+  <description brief="arm_hand_splitter">
+
+     arm_hand_splitter
+
+  </description>
+  <author>Lorenzo Riano</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/arm_hand_splitter</url>
+  <depend package="rospy"/>
+  <depend package="roslib"/>
+  <depend package="trajectory_msgs"/>
+  <depend package="sensor_msgs"/>
+  <depend package="pr2_controllers_msgs"/>
+
+</package>
+
+

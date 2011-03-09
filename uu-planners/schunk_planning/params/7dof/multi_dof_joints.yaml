@@ -1,0 +1,6 @@
+multi_dof_joints:
+  - name: base_joint
+    type: Planar
+    parent_frame_id: odom
+    child_frame_id: ScitosBase
+

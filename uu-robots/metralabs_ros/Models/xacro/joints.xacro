@@ -1,0 +1,115 @@
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+<xacro:property name="max_vel" value="0.8" />
+
+ <joint name="Fixed_A" type="fixed">
+    <origin xyz="0 0 0.0725" rpy="0 0 0"/>
+    <parent link="PAM112_BaseConector"/>
+    <child link="P90_1_LowerCube"/>
+ </joint>
+
+
+ <joint name="Joint0" type="revolute">
+    <origin xyz="0 0 0.09" rpy="0 0 0"/>
+    <parent link="P90_1_LowerCube"/>
+    <child link="P90_1_UpperCube"/>
+    <limit lower="-3.0543" upper="3.0543" effort="2" velocity="${max_vel}" />
+    <axis xyz="0 0 1" />
+ </joint>
+ 
+ <joint name="Fixed_B" type="fixed">
+    <origin xyz="0 0 0.0675" rpy="0 0 0"/>
+    <parent link="P90_1_UpperCube"/>
+    <child link="PAM102"/>
+ </joint>
+ 
+  <joint name="Fixed_C" type="fixed">
+    <origin xyz="0 0 0.0675" rpy="0 0 0"/>
+    <parent link="PAM102"/>
+    <child link="P90_2_LowerCube"/>
+ </joint>
+
+
+ <joint name="Joint1" type="revolute">
+    <origin xyz="0 0.09 0" rpy="0 0 0"/>
+    <parent link="P90_2_LowerCube"/>
+    <child link="P90_2_UpperCube"/>
+    <limit lower="-2.0071" upper="2.0071" effort="2" velocity="${max_vel}" />
+    <axis xyz="0 1 0" />
+ </joint>
+ 
+ <joint name="Fixed_D" type="fixed">
+    <origin xyz="0 -0.00025 0.106" rpy="0 0 0"/>
+    <parent link="P90_2_UpperCube"/>
+    <child link="PAM121"/>
+ </joint>
+ 
+ <joint name="Fixed_E" type="fixed">
+    <origin xyz="0 -0.09025 0.016" rpy="0 0 0"/>
+    <parent link="PAM121"/>
+    <child link="P90_3_LowerCube"/>
+ </joint>
+ 
+ <joint name="Joint2" type="revolute">
+    <origin xyz="0 0 0.09 " rpy="0 0 0"/>
+    <parent link="P90_3_LowerCube"/>
+    <child link="P90_3_UpperCube"/>
+    <limit lower="-2.8099" upper="2.8099" effort="2" velocity="${max_vel}" />
+    <axis xyz="0 0 1" />
+ </joint>
+ 
+ <joint name="Fixed_F" type="fixed">
+    <origin xyz="0 0 0.0675" rpy="0 0 0"/>
+    <parent link="P90_3_UpperCube"/>
+    <child link="PAM110"/>
+ </joint>
+ 
+ 
+ <joint name="Fixed_G" type="fixed">
+    <origin xyz="0 0 0.0575" rpy="0 0 0"/>
+    <parent link="PAM110"/>
+    <child link="P70_1_LowerCube"/>
+ </joint>
+ 
+ <joint name="Joint3" type="revolute">
+    <origin xyz="0 -0.07 0 " rpy="0 0 0"/>
+    <parent link="P70_1_LowerCube"/>
+    <child link="P70_1_UpperCube"/>
+    <limit lower="-0.78539816339744828" upper="2.007" effort="2" velocity="${max_vel}" />
+    <axis xyz="0 -1 0" />
+ </joint>
+ 
+ <joint name="Fixed_H" type="fixed">
+    <origin xyz="0 -0.00025 0.084" rpy="0 0 0"/>
+    <parent link="P70_1_UpperCube"/>
+    <child link="PAM120"/>
+ </joint>
+ 
+ <joint name="Fixed_I" type="fixed">
+    <origin xyz="0 0.07025 0.014" rpy="0 0 0"/>
+    <parent link="PAM120"/>
+    <child link="P70_2_LowerCube"/>
+ </joint>
+ 
+
+ <joint name="Joint4" type="revolute">
+    <origin xyz="0  0 0.07" rpy="0 0 0"/>
+    <parent link="P70_2_LowerCube"/>
+    <child link="P70_2_UpperCube"/>
+    <limit lower="-2.8099" upper="2.8099" effort="2" velocity="${max_vel}" />
+    <axis xyz="0 0 1" />
+ </joint>
+ 
+ <joint name="Fixed_J" type="fixed">
+    <origin xyz="0 0 0.0525" rpy="0 0 0"/>
+    <parent link="P70_2_UpperCube"/>
+    <child link="PAM100"/>
+ </joint>
+
+ <joint name="Fixed_Base" type="fixed">
+    <origin xyz="0 0  0.6075" rpy="0 0 3.14159265358979323846"/>
+    <parent link="ScitosBase"/>
+    <child link="PAM112_BaseConector"/>
+ </joint>
+
+</robot>

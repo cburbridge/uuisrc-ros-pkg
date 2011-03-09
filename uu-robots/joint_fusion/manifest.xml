@@ -1,0 +1,21 @@
+<package>
+  <description brief="joint_fusion">
+
+     A simple node that takes two JointState messages and combines them into one.
+
+     Params: rate the rate at with to publish (default 10)
+     Subrcribes: source1, source2 of type sensor_msgs/JointState
+     Publishes: joint_state of type sensor_msgs/JointState
+
+  </description>
+  <author>Lorenzo Riano </author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/joint_fusion</url>
+  <depend package="sensor_msgs"/>
+  <depend package="rospy"/>
+  <depend package="roslib"/>
+
+</package>
+
+

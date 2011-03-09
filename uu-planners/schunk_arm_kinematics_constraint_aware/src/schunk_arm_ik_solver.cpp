@@ -75,6 +75,7 @@ int SchunkArmIKSolver::CartToJnt(const KDL::JntArray& q_init,
                               const KDL::Frame& p_in, 
                               KDL::JntArray &q_out)
 {
+	ROS_INFO("PEZZ DEBUG: %d -- %d", q_init.rows(), q_out.rows());
 	int ret = solver_->CartToJnt(q_init, p_in, q_out);
 	if (ret < 0) {
 		ROS_WARN("Original KDL fails, what can I do?");

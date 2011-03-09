@@ -3,15 +3,15 @@
 <!-- Environment options -->
   <env name="ROSCONSOLE_CONFIG_FILE" value="/home/pezzotto/Projects/ROS/log.config" />
 
-  <rosparam command="load" ns="robot_description_planning" file="$(find schunk_planning)/params/planning_groups.yaml"/>
-  <rosparam command="load" ns="robot_description_collision" file="$(find schunk_planning)/params/default_collision_operations.yaml"/>
-  <rosparam command="load" ns="robot_description_planning" file="$(find schunk_planning)/params/multi_dof_joints.yaml"/>
+  <rosparam command="load" ns="robot_description_planning" file="$(find schunk_planning)/params/5dof/planning_groups.yaml"/>
+  <rosparam command="load" ns="robot_description_collision" file="$(find schunk_planning)/params/5dof/default_collision_operations.yaml"/>
+  <rosparam command="load" ns="robot_description_planning" file="$(find schunk_planning)/params/5dof/multi_dof_joints.yaml"/>
 
  <!-- Load the arm kinematics with the correct tip and base conectors -->
   <node pkg="schunk_arm_kinematics_constraint_aware" type="schunk_arm_kinematics_constraint_aware" name="schunk_arm_kinematics_constraint_aware" output="screen">      
 	<remap from="robot_description" to="robot_description" />
-        <param name="tip_name" type="string" value="GripperBox" />
-	<param name="root_name" type="string" value="PAM112_BaseConector" />
+    <param name="tip_name" type="string" value="PAM100" />
+	<param name="root_name" type="string" value="ScitosBase" />
 	<param name="maxIterations" type="int" value="20000"/>
 	<param name="epsilon" type="double" value="1e-5"/>
 	<param name="lambda" type="double" value="0.01"/>        
@@ -40,7 +40,7 @@
 	<param name="verbose_collisions" type="bool" value="false" />
 <!-- 	<param name="group_list" type="string" value="schunk" /> -->
 	
-	<rosparam command="load" file="$(find schunk_planning)/params/ompl_planning_configs.yaml" />
+	<rosparam command="load" file="$(find schunk_planning)/params/5dof/ompl_planning_configs.yaml" />
   </node>
   
   <!-- Planning	Environment-->
@@ -70,8 +70,8 @@
   <node pkg="trajectory_filter_server" name="trajectory_filter" type="trajectory_filter_server" output="screen">
     <remap from="/joint_states" to="/schunk/position/joint_states" />
 		
-    <rosparam command="load" file="$(find schunk_planning)/params/schunk_joint_limits.yaml"/>    
-    <rosparam command="load" file="$(find schunk_planning)/params/filters.yaml"/>
+    <rosparam command="load" file="$(find schunk_planning)/params/5dof/schunk_joint_limits.yaml"/>
+    <rosparam command="load" file="$(find schunk_planning)/params/5dof/filters.yaml"/>
 
     <remap from="robot_description" to="robot_description" />
     <remap from="collision_map" to="collision_map_occ" />
@@ -89,7 +89,7 @@
   <!-- Arm Controller -->
   
   <node name="joint_trajectory_action" ns="schunk_arm_controller" pkg="joint_trajectory_action" type="joint_trajectory_action">
-      <rosparam command="load" file="$(find schunk_planning)/params/schunk_arm_controller.yaml" />
+      <rosparam command="load" file="$(find schunk_planning)/params/5dof/schunk_arm_controller.yaml" />
       <remap from="state" to="/schunk/trajectory/state" />
       <remap from="command" to="/schunk/trajectory/command" />
   </node>
@@ -159,10 +159,10 @@
     <param name="resolution" type="double" value="0.001" />
     
     <!-- cloud sources -->
-    <rosparam command="load" file="$(find schunk_planning)/params/collision_map_sources.yaml" />
+    <rosparam command="load" file="$(find schunk_planning)/params/5dof/collision_map_sources.yaml" />
     
     <!--     self see links -->
-    <rosparam command="load" file="$(find schunk_planning)/params/self_see_links.yaml" />		
+    <rosparam command="load" file="$(find schunk_planning)/params/5dof/self_see_links.yaml" />
   </node>
   
 </launch>
