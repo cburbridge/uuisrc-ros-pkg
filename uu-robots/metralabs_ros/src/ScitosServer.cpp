@@ -377,8 +377,12 @@ public:
 
 //			if (data.get()->position.size()!=0)
 //				m_powerCube.pc_move_position(m_nameToNumber[data.get()->name[i]],(data.get()->position[i])/M_PI * 180.0);
+//
 			if (data.get()->velocity.size()!=0)
-				m_powerCube.pc_move_velocity(m_nameToNumber[data.get()->name[i]],(data.get()->velocity[i])/M_PI * 180.0);
+				if (data.get()->velocity[i] == 0.0)
+			        m_powerCube.pc_normal_stop(m_nameToNumber[data.get()->name[i]]);
+			    else
+				    m_powerCube.pc_move_velocity(m_nameToNumber[data.get()->name[i]],(data.get()->velocity[i])/M_PI * 180.0);
 			if (data.get()->effort.size()!=0)
 				m_powerCube.pc_set_current(m_nameToNumber[data.get()->name[i]],(data.get()->effort[i]));
 

@@ -33,6 +33,7 @@ public:
 
 	int pc_emergency_stop();
 	int pc_normal_stop();
+	int pc_normal_stop(int id);
 	int pc_first_ref();
 	int pc_ack();
 	int pc_ack(int id);
