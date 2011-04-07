@@ -1,0 +1,4 @@
+self_see_links:
+    - name: ScitosBase
+      padding: 0.03
+      scale: 1.0

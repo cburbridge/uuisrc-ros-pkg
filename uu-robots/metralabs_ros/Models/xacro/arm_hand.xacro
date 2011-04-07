@@ -1,0 +1,16 @@
+<robot name="schunk_arm_hand" xmlns:xacro="http://ros.org/wiki/xacro">
+
+<!-- Arm -->
+<include filename="$(find metralabs_ros)/Models/xacro/arm_5dof.xacro" />
+
+<!-- Hand -->
+<include filename="$(find sr_hand)/model/robots/xacro/shadowhand_motor.urdf.xacro" />
+
+<!-- Joining them togheter -->
+ <joint name="PAM_Hand_Joint" type="fixed">
+    <origin xyz="0 0  ${0.035/2}" rpy="0 0 0"/>
+    <parent link="PAM100"/>
+    <child link="forearm_motor"/>
+ </joint>
+
+</robot>

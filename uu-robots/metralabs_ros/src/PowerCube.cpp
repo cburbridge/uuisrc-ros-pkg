@@ -33,6 +33,11 @@ int PowerCube::pc_normal_stop() {
 	return 0;
 }
 
+int PowerCube::pc_normal_stop(int id) {
+  mManipulator.stop(id + 100);
+  return 0;
+}
+
 int PowerCube::pc_first_ref() {
 	pc_ack();
 	sleep(1);

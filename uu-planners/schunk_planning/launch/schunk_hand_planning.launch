@@ -1,0 +1,158 @@
+<launch>
+
+  <machine name="Robotlab5" address="192.168.1.5" ros-root="/opt/ros/diamondback/ros" ros-package-path="/home/pezzotto/ROS:/opt/ros/diamondback/stacks" user="pezzotto" />
+  <machine name="Vicon" address="192.168.1.1" ros-root="/opt/ros/diamondback/ros" ros-package-path="/home/pezzotto/ROS:/opt/ros/diamondback/stacks" user="pezzotto" />
+
+<!-- Environment options -->
+  <env name="ROSCONSOLE_CONFIG_FILE" value="/home/pezzotto/Projects/ROS/log.config" />
+
+  <rosparam command="load" ns="robot_description_planning" file="$(find schunk_planning)/params/5dof_hand/planning_groups.yaml"/>
+  <rosparam command="load" ns="robot_description_collision" file="$(find schunk_planning)/params/5dof_hand/default_collision_operations.yaml"/>
+  <rosparam command="load" ns="robot_description_planning" file="$(find schunk_planning)/params/5dof_hand/multi_dof_joints.yaml"/>
+
+ <!-- Load the arm kinematics with the correct tip and base conectors -->
+  <node pkg="schunk_arm_kinematics_constraint_aware" type="schunk_arm_kinematics_constraint_aware" name="schunk_arm_kinematics_constraint_aware" output="screen">
+		<remap from="robot_description" to="robot_description" />
+		<param name="tip_name" type="string" value="palm" />
+		<param name="root_name" type="string" value="ScitosBase" />
+		<param name="maxIterations" type="int" value="20000"/>
+		<param name="epsilon" type="double" value="1e-7"/>
+		<param name="lambda" type="double" value="0.001"/>
+		<param name="group" type="string" value="schunk_hand"/>
+		<param name="free_angle" type="int" value="3" />
+		<param name="search_discretization" type="double" value="0.1" />
+  </node>
+ 
+ <!-- OMPL -->
+  <node pkg="ompl_planning" type="motion_planner" respawn="false" name="ompl_planning" output="screen" machine="Vicon">
+		<param name="planning_frame_id" type="string" value="/ScitosBase" />
+		<remap from="collision_map" to="collision_map_occ" />
+		<remap from="collision_map_update" to="collision_map_occ_update" />
+		<remap from="joint_states" to="/schunk_hand/position/joint_states" />
+
+		<param name="planner_frame_id" type="string" value="ScitosBase" />
+		<param name="state_delay" type="double" value="0.005" />
+		<param name="refresh_interval_collision_map" type="double" value="5.0" />
+		<param name="refresh_interval_kinematic_state" type="double" value="1.0" />
+<!-- 		<param name="bounding_planes" type="string" value="0 0 1 -2.01" /> -->
+		<param name="verbose_collisions" type="bool" value="false" />
+		<param name="pointcloud_padd" type="double" value="0.01" />
+<!-- 		<param name="group_list" type="string" value="schunk_hand" /> -->
+
+		<rosparam command="load" file="$(find schunk_planning)/params/5dof_hand/ompl_planning_configs.yaml" />
+  </node>
+  
+  <!-- Planning	Environment-->
+  
+  <node pkg="planning_environment" type="environment_server" output="log" respawn="false" name="environment_server_schunk">
+		<remap from="joint_states" to="/schunk_hand/position/joint_states" />
+        <remap from="collision_map" to="collision_map_occ" />
+        <remap from="collision_map_update" to="collision_map_occ_update" />
+        
+        <param name="group" type="string" value="schunk_hand" />
+        <param name="allow_valid_collisions" type="bool" value="false" />
+        <param name="collision_map_safety_timeout" type="double" value="1.0" />
+        <param name="joint_states_safety_timeout" type="double" value="1.0" />
+<!--         <param name="bounding_planes" type="string" value="0 0 1 -2.01" /> -->
+        <param name="pointcloud_padd" type="double" value="0.01" />
+        <param name="use_collision_map" type="bool" value="true" />
+        <param name="global_frame" type="string" value="ScitosBase" />
+<!--         It's taking up to a second old updates -->
+        <param name="tf_safety_timeout" type="double" value="1.0" />
+  </node>
+  
+  <!-- Trajectory filter -->
+
+  <node pkg="trajectory_filter_server" name="trajectory_filter" type="trajectory_filter_server" machine="Vicon" output="screen">
+    <rosparam command="load" file="$(find schunk_planning)/params/5dof_hand/schunk_joint_limits.yaml"/>    
+    <rosparam command="load" file="$(find schunk_planning)/params/5dof_hand/filters.yaml"/>
+
+    <remap from="joint_states" to="/schunk_hand/position/joint_states" />
+    <remap from="robot_description" to="robot_description" />
+    <remap from="collision_map" to="collision_map_occ" />
+    <remap from="collision_map_update" to="collision_map_occ_update" />    
+
+    <param name="refresh_interval_collision_map" type="double" value="0.1" />
+    <param name="refresh_interval_kinematic_state" type="double" value="0.1" />
+<!--     <param name="bounding_planes" type="string" value="0 0 1 -2.01" /> -->
+    <param name="compute_contacts" type="bool" value="true" />
+    <param name="pointcloud_padd" type="double" value="0.01" />
+  </node>  
+  
+  <!-- Arm Controller -->
+  
+  <node name="joint_trajectory_action" ns="schunk_arm_controller" pkg="joint_trajectory_action" type="joint_trajectory_action">
+      <rosparam command="load" file="$(find schunk_planning)/params/5dof_hand/schunk_arm_controller.yaml" />
+      <remap from="state" to="/arm_hand/trajectory/state" />
+      <remap from="command" to="/arm_hand/trajectory/command" />
+  </node>
+  
+  <!-- Move Arm glue -->
+  
+   <node pkg="move_arm" type="move_arm_simple_action" output="screen" name="move_arm">
+    <remap from="robot_description" to="robot_description" />
+    <remap from="joint_state" to="/shunk_hand/position/joint_states" />
+    <remap from="arm_ik" to="schunk_arm_kinematics_constraint_aware/get_constraint_aware_ik" />	
+    <remap from="arm_fk" to="schunk_kinematics/get_fk" />	
+    <remap from="filter_trajectory" to="/trajectory_filter/filter_trajectory_with_constraints" />	
+    
+    <!--     the environment_server remappings -->
+    <remap from="get_trajectory_validity" to="environment_server_schunk/get_trajectory_validity" />	
+    <remap from="get_environment_safety" to="environment_server_schunk/get_environment_safety" />	
+    <remap from="get_execution_safety" to="environment_server_schunk/get_execution_safety" />	
+    <remap from="get_joints_in_group" to="environment_server_schunk/get_joints_in_group" />	
+    <remap from="get_robot_state" to="environment_server_schunk/get_robot_state" />	
+    <remap from="get_state_validity" to="environment_server_schunk/get_state_validity" />
+    <remap from="get_group_info" to="environment_server_schunk/get_group_info" />
+
+    <param name="group" type="string" value="schunk_hand" />
+    <param name="ik_allowed_time" type="double" value="5.0" />
+    <param name="trajectory_filter_allowed_time" type="double" value="3.0" />
+    <param name="controller_action_name" type="string" value="/schunk_arm_controller/joint_trajectory_action" />
+  </node>
+  
+  <!-- Empty PointCloud -->
+  <node pkg="empty_pointcloud" type="empty_pointcloud" name="empty_pointcloud" output="screen" />
+  
+  <!--   Collision Map -->
+  <node pkg="collision_map" type="collision_map_self_occ_node" name="collision_map_self_occ_node" respawn="false" output="screen" machine="Vicon">
+    
+    <remap from="robot_description" to="robot_description" />
+    
+    <!-- The default padding to be added for the body parts the robot can see -->
+    <param name="self_see_default_padding" type="double" value="0.05" />
+
+    <!-- The default scaling to be added for the body parts the robot can see -->
+    <param name="self_see_default_scale" type="double" value="1.0" />
+     
+    <!-- if someone asks for a stable map, publish the static map on the dynamic
+    map topic and no longer publish dynamic maps -->
+    <param name="publish_static_over_dynamic_map" type="bool" value="true" />
+
+    <!-- we do not want a separate map with occlusions alone -->
+    <param name="publish_occlusion" type="bool" value="true" />
+
+    <param name="fixed_frame" type="string" value="/odom" />
+
+    <!-- define a box of size 2x3x4 around (1.1,  0, 0) in the robot frame -->
+    <param name="robot_frame" type="string" value="/ScitosBase" />
+
+    <param name="origin_x" type="double" value="0.0" />
+    <param name="origin_y" type="double" value="0.0" />
+    <param name="origin_z" type="double" value="0.0" />
+    
+    <param name="dimension_x" type="double" value="15.0" />
+    <param name="dimension_y" type="double" value="15.0" />
+    <param name="dimension_z" type="double" value="15.0" />
+
+    <!-- set the resolution (10.0 cm) -->
+    <param name="resolution" type="double" value="0.001" />
+    
+    <!-- cloud sources -->
+    <rosparam command="load" file="$(find schunk_planning)/params/5dof_hand/collision_map_sources.yaml" />
+    
+    <!--     self see links -->
+    <rosparam command="load" file="$(find schunk_planning)/params/5dof_hand/self_see_links.yaml" />		
+  </node>
+  
+</launch>

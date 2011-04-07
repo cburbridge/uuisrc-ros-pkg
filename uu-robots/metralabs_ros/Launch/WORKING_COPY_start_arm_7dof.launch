@@ -1,0 +1,36 @@
+<launch>
+	<machine name="Enagh" address="enagh" ros-root="/opt/ros/diamondback/ros" ros-package-path="/localhome/pezzotto/ROS:/opt/ros/diamondback/stacks" user="pezzotto" />
+	<machine name="Robotlab3" address="192.168.1.3" ros-root="/opt/ros/cturtle/ros" ros-package-path="/home/pezzotto/ROS:/opt/ros/cturtle/stacks" user="pezzotto" />
+	
+	<param name="robot_description" command="cat $(find metralabs_ros)/Models/model_7dof.xml" />
+	<param name="schunk_description" command="cat $(find metralabs_ros)/Models/model_7dof.xml" />
+		
+	 <!-- Robot state publisher: publishes tf information regarding the position of the arm -->
+	<node pkg="robot_state_publisher" type="state_publisher" name="schunk_state_publisher" machine="Enagh">	    	    
+	    <remap from="joint_states" to="/schunk/position/joint_states" />
+	    <param name="publish_frequency" type="double" value="30.0" />
+<!-- 	    <param name="tf_prefix" type="string" value="/schunk/position" /> -->
+	</node>
+	
+	<!-- The Arm/Base node -->
+	<node name="metralabs_ros" pkg="metralabs_ros" type="ScitosServer" output="screen" machine="Enagh">
+	    <remap from="schunk_description" to="robot_description"/>
+	    <remap from="state" to="/schunk/trajectory/state" />
+	    <remap from="command" to="/schunk/trajectory/command" />
+	</node>
+
+	<!-- The kinematics node -->
+	<node pkg="schunk_kinematics" type="schunk_kinematics"  name="schunk_kinematics">      
+	    <remap from="schunk_description" to="robot_description" />
+	    <param name="tip_name" type="string" value="GripperBox" />
+	    <param name="root_name" type="string" value="PAM112_BaseConector" />
+	    <param name="maxIterations" type="int" value="20000"/>
+	    <param name="epsilon" type="double" value="1e-5"/>
+	    <param name="lambda" type="double" value="0.01"/>
+	</node>
+	
+	<!-- Velocity Safety node -->
+	<node pkg="velocity_safety" name="velocity_safety" type="safety.py" />
+	
+	
+</launch>

@@ -1,0 +1,24 @@
+joints:
+      - Joint0
+      - Joint1
+      - Joint2
+      - Joint3
+      - Joint4
+      - WRJ1
+      - WRJ2
+constraints:
+      goal_time: 10.0
+      Joint0:
+        goal: 0.04
+      Joint1:
+        goal: 0.04
+      Joint2:
+        goal: 0.04
+      Joint3:
+        goal: 0.04
+      Joint4:
+        goal: 0.04
+      WRJ1:
+        goal: 0.04
+      WRJ2:
+        goal: 0.04

@@ -1,0 +1,77 @@
+## This file should be loaded under ompl_planning
+
+## the list of groups for which motion planning can be performed
+group_list:
+  schunk_hand
+
+## the planner configurations; each config must have a type, which specifies
+## the planner to be used; other parameters can be specified as well, depending 
+## on the planner
+
+planner_configs:
+  
+  armIKConfig1:
+    type: GAIK
+
+  RRTkConfig:
+    type: kinematic::RRT #Rapidly-exploring Random Trees
+    range: 0.75 #the maximum length of a motion to be added in the tree of motions.
+
+  SBLkConfig:
+    #Lazy means that two trees are grown, one from the goal the other from the starting state
+    type: kinematic::SBL #Single-query Bi-directional Lazy collision checking planner
+    projection: 0 1 #??
+    celldim: 1 1 #??
+    range: 0.1  #the maximum length of a motion to be added in the tree of motions.
+
+  LazyRRTkConfig:
+    type: kinematic::LazyRRT
+    range: 0.75 #the maximum length of a motion to be added in the tree of motions.
+    
+  KPIECEkConfig:
+    type: kinematic::KPIECE #Kinematic Planning by Interior-Exterior Cell Exploration
+    projection: 0 1 #??
+    celldim: 1 1
+    range: 0.5
+  
+  LBKPIECEkConfig:
+    type: kinematic::LBKPIECE #Lazy Bi-directional KPIECE
+    projection: 0 1 #??
+    celldim: 1 1 #dimension of the cells
+    range: 0.5
+
+  ESTkConfig:
+    #Lazy means that two trees are grown, one from the goal the other from the starting state
+    type: kinematic::EST #Single-query Bi-directional Lazy collision checking planner
+    projection: 0 1 #??
+    celldim: 1 1 
+    range: 0.5  #the maximum length of a motion to be added in the tree of motions.
+
+  pRRTConfig:
+    type: kinematic::pRRT
+    range: 0.75
+    thread_count: 2
+
+  pSBLkConfig:
+    type: kinematic::pSBL
+    thread_count: 2
+    projection: 0 1
+    celldim: 1 1
+    range: 0.5
+
+  KPIECEdConfig:
+    type: dynamic::KPIECE #Kinodynamic Planning by Interior-Exterior Cell Exploration (KPIECE)
+    projection: 0 1
+    celldim: 0.5 0.5
+
+  RRTdConfig1:
+    type: dynamic::RRT
+
+
+
+## the definition of the planners that go in each group
+groups:
+
+  - name: schunk_hand
+    planner_configs: RRTkConfig SBLkConfig LazyRRTkConfig KPIECEkConfig LBKPIECEkConfig ESTkConfig pRRTConfig pSBLkConfig
+      

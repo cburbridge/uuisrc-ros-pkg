@@ -1,0 +1,66 @@
+<robot name="schunk_arm_5dof" xmlns:xacro="http://ros.org/wiki/xacro">
+
+<include filename="$(find metralabs_ros)/Models/xacro/links.xacro" />
+<!-- Joints -->
+<include filename="$(find metralabs_ros)/Models/xacro/joints.xacro" />
+
+<!-- Links -->
+
+<link name="ScitosBase">
+   <visual>
+    <origin xyz="0 0 0.29" rpy="0 0 0" />
+    <geometry>
+      <cylinder radius="0.18" length="0.58" />
+    </geometry>
+    <material name="scitosblue">
+      <color rgba=".0 .0 .5 1" />
+    </material>
+  </visual>
+  <collision>
+    <origin xyz="0 0 0.29" rpy="0 0 0" />
+    <geometry>
+      <cylinder radius="0.18" length="0.58" />
+    </geometry>
+  </collision>  
+</link>
+
+<xacro:PAM name="PAM112_BaseConector" >
+<cylinder radius="0.045" length="0.055" />
+</xacro:PAM>
+
+<xacro:big_cube name="P90_1_LowerCube" />
+<xacro:big_cube name="P90_1_UpperCube" />
+
+<xacro:PAM name="PAM102" >
+<cylinder radius="0.045" length="0.045" />
+</xacro:PAM>
+
+<xacro:big_cube name="P90_2_LowerCube" />
+<xacro:big_cube name="P90_2_UpperCube" />
+
+<xacro:PAM name="PAM121" >
+<box size="0.048 0.0905 0.122 " />
+</xacro:PAM>
+
+<xacro:big_cube name="P90_3_LowerCube" />
+<xacro:big_cube name="P90_3_UpperCube" />
+
+<xacro:PAM name="PAM110" >
+<cylinder radius="0.035" length="0.045" />
+</xacro:PAM>
+
+<xacro:small_cube name="P70_1_LowerCube" />
+<xacro:small_cube name="P70_1_UpperCube" />
+
+<xacro:PAM name="PAM120" >
+<box size="0.007 0.0705 0.098 " />
+</xacro:PAM>
+
+<xacro:small_cube name="P70_2_LowerCube" />
+<xacro:small_cube name="P70_2_UpperCube" />
+
+<xacro:PAM name="PAM100" >
+<cylinder radius="0.025" length="0.035" />
+</xacro:PAM>
+
+</robot>

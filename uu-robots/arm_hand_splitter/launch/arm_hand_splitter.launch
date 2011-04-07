@@ -1,0 +1,10 @@
+<launch>
+  <node name="arm_hand_splitter" pkg="arm_hand_splitter" type="arm_hand_splitter.py">
+	<remap from="arm_trajectory_state" to="/schunk/trajectory/state" />
+	<remap from="hand_joint_states" to="/srh/position/joint_states" />
+	<remap from="out_command" to="/schunk/trajectory/command" />
+
+	<remap from="command" to="/arm_hand/trajectory/command" />
+	<remap from="state" to="/arm_hand/trajectory/state" />
+  </node>
+</launch>

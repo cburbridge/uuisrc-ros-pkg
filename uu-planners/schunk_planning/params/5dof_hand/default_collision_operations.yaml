@@ -1,0 +1,6 @@
+robot_padd: 0.3
+
+default_collision_operations:
+  - object1: schunk_hand
+    object2: ScitosBase
+    operation: disable

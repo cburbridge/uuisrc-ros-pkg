@@ -1,0 +1,63 @@
+<launch>
+	<machine name="Neagh" address="neagh" ros-root="/opt/ros/ros" ros-package-path="/localhome/pezzotto/ROS:/opt/ros/stacks" user="pezzotto" />
+	<machine name="Hand" address="hand" ros-root="/usr/src/ros/ros" ros-package-path="/home/hand/Projects/shadow_robot:/usr/src/ros" user="hand" password="hand"  timeout="30" />
+	<machine name="Robotlab3" address="192.168.1.3" ros-root="/opt/ros/cturtle/ros" ros-package-path="/home/pezzotto/ROS:/opt/ros/cturtle/stacks" user="pezzotto" />
+	
+	<param name="robot_description" command="cat $(find metralabs_ros)/Models/arm_hand.urdf" />
+	<param name="schunk_description" command="cat $(find metralabs_ros)/Models/arm_5dof.urdf" />
+	<param name="hand_description" textfile="$(find sr_hand)/model/robots/shadowhand_motor.urdf"/>
+		
+	<!-- The Arm/Base node -->
+  <node name="metralabs_ros" pkg="metralabs_ros" type="ScitosServer" output="screen" machine="Neagh">
+	<remap from="robot_description" to="schunk_description" />
+	<remap from="state" to="/schunk/trajectory/state" />
+	<remap from="command" to="/schunk/trajectory/command" />
+  </node>
+
+	<!-- shadowhand -->
+  <node pkg="sr_hand" name="shadowhand"	type="shadowhand_real" machine="Hand">
+    <remap from="robot_description" to="hand_description"/>
+    <param name="shadowhand_prefix" type="string" value="srh/" />
+    <param name="gazebo_joint_states_prefix" type="string" value="gazebo/" />
+    <param name="publish_frequency_diagnostics" type="double" value="1.0" />
+    <param name="publish_frequency" type="double" value="10.0" />
+  </node>
+
+  <!-- tactile sensors -->
+  <node pkg="sr_hand" name="sr_tactile" type="sr_tactile" machine="Hand" />
+
+  <!-- Joint Fusion -->
+  <node name="joint_fusion" pkg="joint_fusion" type="joint_fusion.py" machine="Neagh">
+	<param name="rate" value="10" />
+	<remap from="source1" to="/schunk/position/joint_states" />
+	<remap from="source2" to="/srh/position/joint_states" />
+	<remap from="joint_states" to="/schunk_hand/position/joint_states" />
+  </node>
+
+  <node pkg="robot_state_publisher" type="state_publisher" name="schunk_hand_state_publisher" machine="Neagh">
+    <remap from="robot_description" to="robot_description"/>
+    <remap from="joint_states" to="/schunk_hand/position/joint_states" />
+    <param name="publish_frequency" type="double" value="10.0" />
+  </node>
+
+    <!-- Arm/Hand Splitter -->
+  <node name="arm_hand_splitter" pkg="arm_hand_splitter" type="arm_hand_splitter.py">
+	<remap from="arm_trajectory_state" to="/schunk/trajectory/state" />
+	<remap from="hand_joint_states" to="/srh/position/joint_states" />
+	<remap from="out_command" to="/schunk/trajectory/command" />
+
+	<remap from="command" to="/arm_hand/trajectory/command" />
+	<remap from="state" to="/arm_hand/trajectory/state" />
+  </node>
+
+	<!-- The kinematics node -->
+<!--  <node pkg="schunk_kinematics" type="schunk_kinematics"  name="schunk_kinematics">
+	<remap from="schunk_description" to="robot_description" />
+	<param name="tip_name" type="string" value="palm" />
+	<param name="root_name" type="string" value="PAM112_BaseConector" />
+	<param name="maxIterations" type="int" value="2000"/>
+	<param name="epsilon" type="double" value="1e-7"/>
+	<param name="lambda" type="double" value="0.001"/>
+  </node>-->
+	
+</launch>
