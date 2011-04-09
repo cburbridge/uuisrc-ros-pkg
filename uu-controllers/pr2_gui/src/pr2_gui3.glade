@@ -150,7 +150,6 @@
                         <child>
                           <object class="GtkCheckButton" id="check_torso">
                             <property name="label" translatable="yes">Torso</property>
-                            <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
                             <property name="draw_indicator">True</property>

@@ -283,7 +283,7 @@ class C_PR2ControlCentre:
         # setup spinbuttons
         for name in self.jointNames.all:
             widget = self.wTree.get_object("c_"+name)
-            widget.set_digits(4)
+            widget.set_digits(10)
             widget.set_increments(1, 5)
             if self.inDegrees:
                 widget.set_range(-180.0, 180.0)
@@ -323,7 +323,7 @@ class C_PR2ControlCentre:
             if self.inDegrees:
                 value *= 180 / pi
             # update corresponding widget  
-            self.wTree.get_object("d_"+str(name)).set_text("%.4f" % value)
+            self.wTree.get_object("d_"+str(name)).set_text("%.10f" % value)
         return True
         pass
 
