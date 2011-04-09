@@ -285,7 +285,10 @@ class C_PR2ControlCentre:
             widget = self.wTree.get_object("c_"+name)
             widget.set_digits(4)
             widget.set_increments(1, 5)
-            widget.set_range(-180, 180)
+            if self.inDegrees:
+                widget.set_range(-180.0, 180.0)
+            else:
+                widget.set_range(-pi, pi)
         
         # Subscribers
         self.currentJointStates = JointState()
