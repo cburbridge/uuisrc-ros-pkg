@@ -8,7 +8,7 @@ try:
     pygtk.require("2.0")
     import gobject
 #    import csv
-    import roslib; roslib.load_manifest('pr2_gui')
+    import roslib; roslib.load_manifest('pr2_control_gui')
     import rospy
     from sensor_msgs.msg import JointState
 
@@ -228,7 +228,7 @@ class C_PR2ControlCentre:
         
         # load gui
         self.wTree = gtk.Builder()
-        self.wTree.add_from_file("pr2_gui3.glade")
+        self.wTree.add_from_file("pr2_control_gui.glade")
         
         # keep track of checks for fast access
         self.checks = {"l_arm":self.wTree.get_object("check_l_arm").get_active(),

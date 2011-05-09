@@ -1,15 +1,15 @@
 <package>
-  <description brief="pr2_gui">
+  <description brief="pr2_control_gui">
 
      A control GUI for the PR2 which allows to save the joint states in a stack.
 
-     NO GUARANTEES. Be careful with the values as there are no limits.
+     Be careful with the values as there are no limits.
 
   </description>
   <author>Yiannis Gatsoulis</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/pr2_gui</url>
+  <url>http://ros.org/wiki/pr2_control_gui</url>
   <depend package="rospy"/>
   <depend package="pr2_msgs"/>
   <depend package="sensor_msgs"/>
