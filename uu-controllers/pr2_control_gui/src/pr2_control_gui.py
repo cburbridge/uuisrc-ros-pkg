@@ -105,6 +105,9 @@ class C_PR2ControlCentre:
                 widget.set_range(-180.0, 180.0)
             else:
                 widget.set_range(-pi, pi)
+        self.wTree.get_object("time_to_action_completion").set_range(0, 60)
+        self.wTree.get_object("time_to_action_completion").set_digits(2)
+        self.wTree.get_object("time_to_action_completion").set_increments(0.5, 1)
         
         # Subscribers
         self.currentJointStates = JointState()
@@ -256,6 +259,7 @@ class C_PR2ControlCentre:
     
     
     def on_add_clicked(self, widget):
+        self.on_copy_clicked(widget)        
         name = self.find_unique_joint_state_name()
         dialogText = self.wTree.get_object("jointStateName") 
         dialogText.set_text(name)
@@ -283,6 +287,7 @@ class C_PR2ControlCentre:
 
     def on_addOK_clicked(self, widget):
         label = self.wTree.get_object("jointStateName").get_text()
+        teatime = float(self.wTree.get_object("time_to_action_completion").get_value())
         jstate = self.currentJointStates
         jstate.position = list(jstate.position) # so i can edit as it is a tuple
         for name in self.robot_state.all:
@@ -298,6 +303,7 @@ class C_PR2ControlCentre:
             jstate.position[i] = value
         
         self.mover.store_targets()
+        self.mover.time_to_reach = teatime
         self.stackDict[label] = (jstate, self.mover)
         
         self.mover = pr2_joint_mover.PR2JointMover(self.robot_state)
@@ -330,6 +336,7 @@ class C_PR2ControlCentre:
                 if self.inDegrees:
                     value *= 180 / pi
                 self.wTree.get_object("c_"+name).set_value(value)
+            self.wTree.get_object("time_to_action_completion").set_value(float(self.mover.time_to_reach))
         pass
 
 
@@ -348,8 +355,9 @@ class C_PR2ControlCentre:
                 label = treerow[0]
                 (jstate,mover) = self.stackDict[label]
                 mover.write_targets(fp)
-                msg = "label:%s\n" % label
+                msg = "label:%s\n\n" % label                
                 fp.write(msg)
+                
 
             fp.close()
         elif response == gtk.RESPONSE_CANCEL:
@@ -386,6 +394,8 @@ class C_PR2ControlCentre:
         dialog.select_filename("default.list")
         response = dialog.run()
         if response == gtk.RESPONSE_OK:
+#            self.stackDict = {}
+#            self.stackList = []
             filename = dialog.get_filename()
             fp = open(filename, "r")
             num_read = 0

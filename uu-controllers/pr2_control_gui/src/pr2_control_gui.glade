@@ -216,9 +216,6 @@
                           </packing>
                         </child>
                         <child>
-                          <placeholder/>
-                        </child>
-                        <child>
                           <object class="GtkButton" id="exe">
                             <property name="label" translatable="yes">Exe</property>
                             <property name="visible">True</property>
@@ -230,6 +227,9 @@
                             <property name="left_attach">1</property>
                             <property name="right_attach">2</property>
                           </packing>
+                        </child>
+                        <child>
+                          <placeholder/>
                         </child>
                       </object>
                     </child>

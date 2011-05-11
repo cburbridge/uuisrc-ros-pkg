@@ -6,7 +6,7 @@
      Be careful with the values as there are no limits.
 
   </description>
-  <author>Yiannis Gatsoulis</author>
+  <author>Yiannis Gatsoulis Lorenzo Riano</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/pr2_control_gui</url>
