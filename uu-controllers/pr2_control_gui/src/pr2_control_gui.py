@@ -44,7 +44,17 @@ class C_PR2ControlCentre:
         # load gui
         self.wTree = gtk.Builder()
         self.wTree.add_from_file("pr2_control_gui.glade")
-        
+
+        # check which modules are active
+        if actives == None:
+            self.wTree.get_object("check_l_arm").set_active(True)
+            self.wTree.get_object("check_r_arm").set_active(True)
+            self.wTree.get_object("check_l_gripper").set_active(True)
+            self.wTree.get_object("check_r_gripper").set_active(True)
+            self.wTree.get_object("check_r_gripper").set_active(True)
+            self.wTree.get_object("check_head").set_active(True)
+            self.wTree.get_object("check_torso").set_active(False)
+               
         # keep track of checks for fast access
         self.checks = {"l_arm":self.wTree.get_object("check_l_arm").get_active(),
                "r_arm":self.wTree.get_object("check_r_arm").get_active(),
@@ -56,16 +66,6 @@ class C_PR2ControlCentre:
         # set inDegrees
         self.wTree.get_object("inDegrees").set_active(False) # xxx
         self.inDegrees = self.wTree.get_object("inDegrees").get_active()
-      
-        # check which modules are active
-        if actives == None:
-            self.wTree.get_object("check_l_arm").set_active(False)
-            self.wTree.get_object("check_r_arm").set_active(False)
-            self.wTree.get_object("check_l_gripper").set_active(False)
-            self.wTree.get_object("check_r_gripper").set_active(False)
-            self.wTree.get_object("check_r_gripper").set_active(False)
-            self.wTree.get_object("check_head").set_active(False)
-            self.wTree.get_object("check_torso").set_active(False)
 
         # setup stack list
         self.stackList = self.wTree.get_object("stackList")
@@ -92,7 +92,8 @@ class C_PR2ControlCentre:
                     "on_delete_clicked":self.on_delete_clicked,
                     "on_stackBox_changed":self.on_stackBox_changed,
                     "on_saveStack_clicked":self.on_saveStack_clicked,
-                    "on_loadStack_clicked":self.on_loadStack_clicked }
+                    "on_loadStack_clicked":self.on_loadStack_clicked,
+                    "on_exe_clicked":self.on_exe_clicked }
         self.wTree.connect_signals(bindings)
         
         # setup spinbuttons
@@ -408,6 +409,12 @@ class C_PR2ControlCentre:
         dialog.destroy()                
         pass
 
+    def on_exe_clicked(self, widget):
+        for treerow in self.stackList:
+            label = treerow[0]
+            _, mover = self.stackDict[label]
+            mover.execute_and_wait()
+        pass
 
     # other
     def find_unique_joint_state_name(self):
