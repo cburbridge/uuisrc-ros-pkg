@@ -8,6 +8,7 @@ pygtk.require("2.0")
 import gobject
 #    import csv
 import roslib; roslib.load_manifest('pr2_control_gui')
+
 import rospy
 from sensor_msgs.msg import JointState
 
@@ -107,6 +108,7 @@ class C_PR2ControlCentre:
         self.wTree.get_object("time_to_action_completion").set_range(0, 60)
         self.wTree.get_object("time_to_action_completion").set_digits(2)
         self.wTree.get_object("time_to_action_completion").set_increments(0.5, 1)
+        self.wTree.get_object("time_to_action_completion").set_value(1.0)
         
         # Subscribers
         self.currentJointStates = JointState()
@@ -258,7 +260,8 @@ class C_PR2ControlCentre:
     
     
     def on_add_clicked(self, widget):
-        self.on_copy_clicked(widget)        
+        if not self.wTree.get_object("add_intention").get_active():
+            self.on_copy_clicked(widget)        
         name = self.find_unique_joint_state_name()
         dialogText = self.wTree.get_object("jointStateName") 
         dialogText.set_text(name)
@@ -301,7 +304,10 @@ class C_PR2ControlCentre:
                 value *= pi / 180
             jstate.position[i] = value
         
-        self.mover.store_targets()
+        if not self.wTree.get_object("add_intention").get_active():
+            self.mover.store_targets()
+        else:
+            self.mover.store_targets(jstate)
         self.mover.time_to_reach = teatime
         self.stackDict[label] = (jstate, self.mover)
         
