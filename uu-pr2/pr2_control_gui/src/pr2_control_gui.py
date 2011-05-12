@@ -381,8 +381,8 @@ class C_PR2ControlCentre:
         jstate.position = (mover.target_head + 
                            mover.target_left_arm +
                            mover.target_right_arm + 
-                           [mover.target_left_gripper] +
-                           [mover.target_right_gripper]
+                           mover.target_left_gripper +
+                           mover.target_right_gripper
                            )
                           
         jstate.name = [i for i in self.robot_state.head_joint_names +
@@ -414,7 +414,8 @@ class C_PR2ControlCentre:
                         rospy.loginfo("%d entries read"%num_read)
                         break
                     jstate = self.mover_to_jointstate(newmover)
-                    label = newmover.name                    
+                    newmover.name = newmover.name.strip("\n")
+                    label = newmover.name
                     self.stackList.insert(len(self.stackList), [label])
                     self.stackDict[label] = (jstate,newmover)
                     num_read += 1                    

@@ -517,8 +517,6 @@ class PR2JointMover(object):
                 l.strip("\n")
                 if len(l) == 0:
                     raise exceptions.Exception('empty line')
-                if l=='\n':
-                    print 'line new line'
                 if l.find("arm") != -1:
                     jvals_str = l.split(":")[1]
                     jvals = map(lambda x: float(x),jvals_str.strip("\n").split(","))
@@ -534,9 +532,9 @@ class PR2JointMover(object):
                     jval = map(lambda x: float(x),jval_str.strip("\n").split(","))[0]
                     gripper = l.split(":")[0]
                     if gripper[0] == 'l':
-                        self.target_left_gripper = jval
+                        self.target_left_gripper = [jval]
                     elif gripper[0] == 'r':
-                        self.target_right_gripper = jval
+                        self.target_right_gripper = [jval]
                     else:
                         rospy.logerr("Error, unkown joint: %s"%gripper)                
                 if l.find("head") != -1:
@@ -554,6 +552,14 @@ class PR2JointMover(object):
 #
         if type(bfile) is str:
             f.close()
+#        print '-------------------------------'
+#        print 'larm', self.target_left_arm
+#        print 'rarm', self.target_right_arm
+#        print 'lgripper', self.target_left_gripper
+#        print 'rgripper', self.target_right_gripper
+#        print 'head', self.target_head
+#        print 'time', self.time_to_reach
+#        print '-------------------------------'
         return True
         
     def store_targets(self, jstate=False):
@@ -622,7 +628,14 @@ class PR2JointMover(object):
         Write on the file the previsouly stored target joints
         @param bfile: either a string or an open file object
         '''
-        
+#        print '-------------------------------'
+#        print 'larm', self.target_left_arm
+#        print 'rarm', self.target_right_arm
+#        print 'lgripper', self.target_left_gripper
+#        print 'rgripper', self.target_right_gripper
+#        print 'head', self.target_head
+#        print 'time', self.time_to_reach
+#        print '-------------------------------'
         if type(bfile) is str:
             f = open(file,'r')
         else:
