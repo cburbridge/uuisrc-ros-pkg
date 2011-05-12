@@ -96,7 +96,8 @@ class C_PR2ControlCentre:
                     "on_exe_clicked":self.on_exe_clicked,
                     "on_clear_stack_clicked":self.on_clear_stack_clicked,
                     "on_stackUp_clicked":self.on_stackUp_clicked,
-                    "on_stackDown_clicked":self.on_stackDown_clicked }
+                    "on_stackDown_clicked":self.on_stackDown_clicked,
+                    "on_update_clicked":self.on_update_clicked }
         self.wTree.connect_signals(bindings)
         
         # setup spinbuttons
@@ -466,6 +467,38 @@ class C_PR2ControlCentre:
             self.stackList.remove(treeiter)
             self.wTree.get_object("stackBox").set_active(boxIndex+1)
         pass
+
+    def on_update_clicked(self, widget):
+        label = self.wTree.get_object("stackBox").get_active_text()
+        boxIndex = self.wTree.get_object("stackBox").get_active()
+        if boxIndex < 0:
+            rospy.logerr("update what?")
+            return      
+        teatime = float(self.wTree.get_object("time_to_action_completion").get_value())
+        jstate = self.currentJointStates
+        jstate.position = list(jstate.position) # so i can edit as it is a tuple
+        for name in self.robot_state.all:
+            try:
+                i = self.currentJointStates.name.index(name)
+            except ValueError:
+                i = -1
+                rospy.logerr("astral projection trance")
+                return
+            value = float(self.wTree.get_object("c_"+name).get_value())
+            if self.inDegrees:
+                value *= pi / 180
+            jstate.position[i] = value
+        
+        if not self.wTree.get_object("add_intention").get_active():
+            self.mover.store_targets()
+        else:
+            self.mover.store_targets(jstate)
+        self.mover.time_to_reach = teatime
+        self.stackDict[label] = (jstate, self.mover)
+        self.mover = pr2_joint_mover.PR2JointMover(self.robot_state)            
+        pass
+
+
 
     # other
     def find_unique_joint_state_name(self):

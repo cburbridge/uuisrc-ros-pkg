@@ -372,19 +372,6 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkButton" id="delete">
-                            <property name="label" translatable="yes">Delete</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">True</property>
-                            <signal name="clicked" handler="on_delete_clicked"/>
-                          </object>
-                          <packing>
-                            <property name="top_attach">1</property>
-                            <property name="bottom_attach">2</property>
-                          </packing>
-                        </child>
-                        <child>
                           <object class="GtkButton" id="saveStack">
                             <property name="label" translatable="yes">Save</property>
                             <property name="visible">True</property>
@@ -396,9 +383,6 @@
                             <property name="left_attach">2</property>
                             <property name="right_attach">3</property>
                           </packing>
-                        </child>
-                        <child>
-                          <placeholder/>
                         </child>
                         <child>
                           <object class="GtkButton" id="loadStack">
@@ -426,6 +410,32 @@
                           <packing>
                             <property name="left_attach">1</property>
                             <property name="right_attach">2</property>
+                            <property name="top_attach">1</property>
+                            <property name="bottom_attach">2</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="delete">
+                            <property name="label" translatable="yes">Delete</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <signal name="clicked" handler="on_delete_clicked"/>
+                          </object>
+                          <packing>
+                            <property name="left_attach">1</property>
+                            <property name="right_attach">2</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="update">
+                            <property name="label" translatable="yes">Update</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <signal name="clicked" handler="on_update_clicked"/>
+                          </object>
+                          <packing>
                             <property name="top_attach">1</property>
                             <property name="bottom_attach">2</property>
                           </packing>
