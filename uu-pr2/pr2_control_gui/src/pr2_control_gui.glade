@@ -319,7 +319,7 @@
                       <object class="GtkTable" id="table5">
                         <property name="visible">True</property>
                         <property name="n_rows">2</property>
-                        <property name="n_columns">2</property>
+                        <property name="n_columns">3</property>
                         <child>
                           <object class="GtkButton" id="add">
                             <property name="label" translatable="yes">Add</property>
@@ -351,9 +351,12 @@
                             <signal name="clicked" handler="on_saveStack_clicked"/>
                           </object>
                           <packing>
-                            <property name="left_attach">1</property>
-                            <property name="right_attach">2</property>
+                            <property name="left_attach">2</property>
+                            <property name="right_attach">3</property>
                           </packing>
+                        </child>
+                        <child>
+                          <placeholder/>
                         </child>
                         <child>
                           <object class="GtkButton" id="loadStack">
@@ -362,6 +365,21 @@
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <signal name="clicked" handler="on_loadStack_clicked"/>
+                          </object>
+                          <packing>
+                            <property name="left_attach">2</property>
+                            <property name="right_attach">3</property>
+                            <property name="top_attach">1</property>
+                            <property name="bottom_attach">2</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="clear_stack">
+                            <property name="label" translatable="yes">Clear</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <signal name="clicked" handler="on_clear_stack_clicked"/>
                           </object>
                           <packing>
                             <property name="left_attach">1</property>

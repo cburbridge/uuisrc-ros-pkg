@@ -93,7 +93,8 @@ class C_PR2ControlCentre:
                     "on_stackBox_changed":self.on_stackBox_changed,
                     "on_saveStack_clicked":self.on_saveStack_clicked,
                     "on_loadStack_clicked":self.on_loadStack_clicked,
-                    "on_exe_clicked":self.on_exe_clicked }
+                    "on_exe_clicked":self.on_exe_clicked,
+                    "on_clear_stack_clicked":self.on_clear_stack_clicked }
         self.wTree.connect_signals(bindings)
         
         # setup spinbuttons
@@ -399,8 +400,6 @@ class C_PR2ControlCentre:
         dialog.select_filename("default.list")
         response = dialog.run()
         if response == gtk.RESPONSE_OK:
-#            self.stackDict = {}
-#            self.stackList = []
             filename = dialog.get_filename()
             fp = open(filename, "r")
             num_read = 0
@@ -429,6 +428,15 @@ class C_PR2ControlCentre:
             label = treerow[0]
             _, mover = self.stackDict[label]
             mover.execute_and_wait()
+        pass
+
+    def on_clear_stack_clicked(self, widget):
+        self.stackDict = {}
+        treestore = self.stackList
+        for i in range(len(self.stackList)):
+            treestore = self.stackList
+            treeiter = treestore.iter_nth_child(None, 0)
+            self.stackList.remove(treeiter)
         pass
 
     # other

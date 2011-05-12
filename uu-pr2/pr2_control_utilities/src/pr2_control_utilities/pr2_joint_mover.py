@@ -561,14 +561,12 @@ class PR2JointMover(object):
         Store the current joints as a target
         '''
         if not jstate:
-            print 'no intention'
             self.target_head = self.robot_state.head_positions
             self.target_left_arm = self.robot_state.left_arm_positions
             self.target_right_arm = self.robot_state.right_arm_positions
             self.target_left_gripper = self.robot_state.l_gripper_positions
             self.target_right_gripper = self.robot_state.r_gripper_positions
         else:
-            print 'intention'
             self.target_head = []
             for name in self.robot_state.head_joint_names:
                 try:
