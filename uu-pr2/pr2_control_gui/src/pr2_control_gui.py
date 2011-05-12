@@ -105,7 +105,7 @@ class C_PR2ControlCentre:
             if self.inDegrees:
                 widget.set_range(-180.0, 180.0)
             else:
-                widget.set_range(-pi, pi)
+                widget.set_range(-1000*pi, 1000*pi)
         self.wTree.get_object("time_to_action_completion").set_range(0, 60)
         self.wTree.get_object("time_to_action_completion").set_digits(2)
         self.wTree.get_object("time_to_action_completion").set_increments(0.5, 1)
