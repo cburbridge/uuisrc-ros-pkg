@@ -28,6 +28,8 @@
 
 # Author: Lorenzo Riano <lorenzo.riano@gmail.com> (based on code from Jon Scholz)
 
+import roslib
+roslib.load_manifest("pr2_control_utilities")
 import rospy
 import actionlib
 import math
@@ -364,13 +366,13 @@ class PR2JointMover(object):
             client.wait_for_result()
 
     def close_right_gripper(self, wait=False):
-        self.set_gripper_state(0.025307, "r",wait)    
+        self.set_gripper_state([0.025307], "r",wait)    
     def open_right_gripper(self, wait=False):
-        self.set_gripper_state(0.090474, "r",wait)
+        self.set_gripper_state([0.090474], "r",wait)
     def close_left_gripper(self, wait=False):
-        self.set_gripper_state(0.025307, "l",wait)    
+        self.set_gripper_state([0.025307], "l",wait)    
     def open_left_gripper(self, wait=False):
-        self.set_gripper_state(0.090474, "l",wait)
+        self.set_gripper_state([0.090474], "l",wait)
 
     def set_gripper_state(self, jval, gripper, wait=False):
         """ Sets goal for indicated gripper (r_gripper/l_gripper) using provided joint angle"""
@@ -383,8 +385,9 @@ class PR2JointMover(object):
 
         goal = Pr2GripperCommandGoal()
         goal.command.max_effort = -1
-        goal.command.position = jval
+        goal.command.position = jval[0]
         
+        rospy.loginfo("Message: %s"%str(goal))
 #        rospy.loginfo("Sending command to %s" % gripper)
         if gripper[0] == "l":
             client.send_goal(goal, done_cb=self.__l_gripper_done_cb)
@@ -662,3 +665,11 @@ class PR2JointMover(object):
         f.write("\n")
         
         f.write("time: %f\n"% self.time_to_reach)
+        
+if __name__ == "__main__":
+    rospy.init_node('trytest', anonymous=True)
+    state = RobotState()
+    mover = PR2JointMover(state)
+    mover.parse_bookmark_file("/home/pezzotto/ROS/rubiks_graph/RCube/dance2.pos")
+    mover.time_to_reach = 3
+    mover.execute_and_wait()
