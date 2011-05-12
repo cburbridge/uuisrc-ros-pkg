@@ -265,7 +265,7 @@ class C_PR2ControlCentre:
     
     def on_add_clicked(self, widget):
         if not self.wTree.get_object("add_intention").get_active():
-            self.on_copy_clicked(widget)        
+            self.on_copy_clicked(widget)
         name = self.find_unique_joint_state_name()
         dialogText = self.wTree.get_object("jointStateName") 
         dialogText.set_text(name)
@@ -469,6 +469,8 @@ class C_PR2ControlCentre:
         pass
 
     def on_update_clicked(self, widget):
+        if not self.wTree.get_object("add_intention").get_active():
+            self.on_copy_clicked(widget)
         label = self.wTree.get_object("stackBox").get_active_text()
         boxIndex = self.wTree.get_object("stackBox").get_active()
         if boxIndex < 0:
