@@ -1,0 +1,23 @@
+<package>
+  <description brief="pr2_control_utilities">
+
+     pr2_control_utilities
+
+  </description>
+  <author>Lorenzo Riano</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/pr2_control_utilities</url>
+  <depend package="rospy"/>
+  <depend package="pr2_controllers_msgs"/>
+  <depend package="geometry_msgs"/>
+  <depend package="motion_planning_msgs"/>
+  <depend package="sensor_msgs"/>
+  <depend package="actionlib"/>
+  <depend package="actionlib_msgs"/>
+  <depend package="kinematics_msgs"/>
+  <depend package="tf"/>
+
+</package>
+
+

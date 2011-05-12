@@ -22,8 +22,7 @@ from geometry_msgs.msg import Twist, Pose, PoseStamped, TwistStamped
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from pr2_controllers_msgs.msg import *
 
-import pr2_joint_mover
-
+from pr2_control_utilities import pr2_joint_mover
 
 
 class C_PR2ControlCentre:

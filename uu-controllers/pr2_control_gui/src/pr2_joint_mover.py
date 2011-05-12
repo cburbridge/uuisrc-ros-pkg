@@ -1,1 +1,0 @@
-/home/pezzotto/ROS/rubiks_graph/src/pr2_joint_mover.py
