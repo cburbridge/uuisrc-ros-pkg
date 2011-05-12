@@ -556,15 +556,68 @@ class PR2JointMover(object):
             f.close()
         return True
         
-    def store_targets(self):
+    def store_targets(self, jstate=False):
         '''
         Store the current joints as a target
         '''
-        self.target_head = self.robot_state.head_positions
-        self.target_left_arm = self.robot_state.left_arm_positions
-        self.target_right_arm = self.robot_state.right_arm_positions
-        self.target_left_gripper = self.robot_state.l_gripper_positions
-        self.target_right_gripper = self.robot_state.r_gripper_positions
+        if not jstate:
+            print 'no intention'
+            self.target_head = self.robot_state.head_positions
+            self.target_left_arm = self.robot_state.left_arm_positions
+            self.target_right_arm = self.robot_state.right_arm_positions
+            self.target_left_gripper = self.robot_state.l_gripper_positions
+            self.target_right_gripper = self.robot_state.r_gripper_positions
+        else:
+            print 'intention'
+            self.target_head = []
+            for name in self.robot_state.head_joint_names:
+                try:
+                    i = jstate.name.index(name)
+                    self.target_head.append(jstate.position[i])
+                except ValueError:
+                    i = -1
+                    rospy.logerr("this shouldn't have happened")
+                    return
+
+            self.target_left_arm = []
+            for name in self.robot_state.left_joint_names:
+                try:
+                    i = jstate.name.index(name)
+                    self.target_left_arm.append(jstate.position[i])
+                except ValueError:
+                    i = -1
+                    rospy.logerr("this shouldn't have happened")
+                    return
+
+            self.target_right_arm = []
+            for name in self.robot_state.right_joint_names:
+                try:
+                    i = jstate.name.index(name)
+                    self.target_right_arm.append(jstate.position[i])
+                except ValueError:
+                    i = -1
+                    rospy.logerr("this shouldn't have happened")
+                    return
+            
+            self.target_left_gripper = []
+            for name in self.robot_state.l_gripper_names:
+                try:
+                    i = jstate.name.index(name)
+                    self.target_left_gripper.append(jstate.position[i])
+                except ValueError:
+                    i = -1
+                    rospy.logerr("this shouldn't have happened")
+                    return
+            
+            self.target_right_gripper = []
+            for name in self.robot_state.r_gripper_names:
+                try:
+                    i = jstate.name.index(name)
+                    self.target_right_gripper.append(jstate.position[i])
+                except ValueError:
+                    i = -1
+                    rospy.logerr("this shouldn't have happened")
+                    return
         
     def write_targets(self, bfile):
         '''
