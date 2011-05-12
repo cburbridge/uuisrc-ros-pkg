@@ -94,7 +94,9 @@ class C_PR2ControlCentre:
                     "on_saveStack_clicked":self.on_saveStack_clicked,
                     "on_loadStack_clicked":self.on_loadStack_clicked,
                     "on_exe_clicked":self.on_exe_clicked,
-                    "on_clear_stack_clicked":self.on_clear_stack_clicked }
+                    "on_clear_stack_clicked":self.on_clear_stack_clicked,
+                    "on_stackUp_clicked":self.on_stackUp_clicked,
+                    "on_stackDown_clicked":self.on_stackDown_clicked }
         self.wTree.connect_signals(bindings)
         
         # setup spinbuttons
@@ -432,11 +434,37 @@ class C_PR2ControlCentre:
 
     def on_clear_stack_clicked(self, widget):
         self.stackDict = {}
-        treestore = self.stackList
-        for i in range(len(self.stackList)):
+        self.clear_stack()
+        pass
+
+    def on_stackUp_clicked(self, widget):
+        label = self.wTree.get_object("stackBox").get_active_text()
+        boxIndex = self.wTree.get_object("stackBox").get_active()
+        if boxIndex < 0:
+            rospy.logerr("can't move thin air")
+        elif boxIndex == 0:
+            rospy.logerr("and try to move your head above your head")
+        else:  
+            self.stackList.insert(boxIndex-1, [label])
             treestore = self.stackList
-            treeiter = treestore.iter_nth_child(None, 0)
+            treeiter = treestore.iter_nth_child(None, boxIndex+1)
             self.stackList.remove(treeiter)
+            self.wTree.get_object("stackBox").set_active(boxIndex-1)
+        pass
+    
+    def on_stackDown_clicked(self, widget):
+        label = self.wTree.get_object("stackBox").get_active_text()
+        boxIndex = self.wTree.get_object("stackBox").get_active()
+        if boxIndex < 0:
+            rospy.logerr("can't move thin air")
+        elif boxIndex == len(self.stackList)-1:
+            rospy.logerr("and try to move your foot below your foot, same foot")
+        else:  
+            self.stackList.insert(boxIndex+2, [label])
+            treestore = self.stackList
+            treeiter = treestore.iter_nth_child(None, boxIndex)
+            self.stackList.remove(treeiter)
+            self.wTree.get_object("stackBox").set_active(boxIndex+1)
         pass
 
     # other
@@ -448,6 +476,14 @@ class C_PR2ControlCentre:
                 i += 1
             else:
                 return name
+        pass
+    
+    def clear_stack(self):
+        treestore = self.stackList
+        for i in range(len(self.stackList)):
+            treestore = self.stackList
+            treeiter = treestore.iter_nth_child(None, 0)
+            self.stackList.remove(treeiter)
         pass
 
 # end of class
