@@ -205,6 +205,7 @@ class C_PR2ControlCentre:
 
     def on_move_clicked(self, widget):
         # move left arm
+        self.mover.time_to_reach = float(self.wTree.get_object("time_to_action_completion").get_value())
         if self.checks['l_arm']:
             jvals = []
             for name in self.robot_state.left_joint_names:

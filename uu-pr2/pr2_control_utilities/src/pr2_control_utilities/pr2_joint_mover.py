@@ -40,7 +40,9 @@ from sensor_msgs.msg import JointState
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from pr2_controllers_msgs.msg import *
 from pr2_controllers_msgs.msg._PointHeadAction import PointHeadAction
-
+from motion_planning_msgs.srv import (FilterJointTrajectoryWithConstraints,
+                                      FilterJointTrajectoryWithConstraintsRequest, 
+                                      FilterJointTrajectoryWithConstraintsResponse)
 
 class RobotState(object):
     '''
@@ -92,7 +94,13 @@ class RobotState(object):
         self.head_pointer_client = actionlib.SimpleActionClient("head_traj_controller/point_head_action", PointHeadAction)
         self.head_client = rospy.Publisher('/head_traj_controller/command', JointTrajectory, latch=True)        
         
+        rospy.loginfo("Waiting for trajectory filter service")
+        rospy.wait_for_service("/trajectory_filter/filter_trajectory_with_constraints")
+        self.filter_service = rospy.ServiceProxy("/trajectory_filter/filter_trajectory_with_constraints",
+                                                 FilterJointTrajectoryWithConstraints)
+        
         # Some seemingly very important waits........
+        rospy.loginfo("Waiting for joint trajectory actions")
         self.r_arm_client.wait_for_server()
         self.l_arm_client.wait_for_server()
         self.r_gripper_client.wait_for_server()
@@ -104,6 +112,8 @@ class RobotState(object):
         self.r_gripper_client.cancel_all_goals()
         self.l_gripper_client.cancel_all_goals()
         self.head_pointer_client.cancel_all_goals()
+        
+        rospy.loginfo("Robot State is ready")
     
     def __getstate__(self):
         '''
@@ -177,6 +187,7 @@ class PR2JointMover(object):
         self.l_gripper_client = robot_state.l_gripper_client 
         self.head_pointer_client = robot_state.head_pointer_client
         self.head_client = robot_state.head_client 
+        self.filter_service = robot_state.filter_service
                 
         self.target_left_arm = []
         self.target_right_arm = []
@@ -211,24 +222,13 @@ class PR2JointMover(object):
          self.target_right_gripper) = state
         
         #bits that couldn't be pickled
-        self.r_arm_client = actionlib.SimpleActionClient("r_arm_controller/joint_trajectory_action", JointTrajectoryAction)        
-        self.l_arm_client = actionlib.SimpleActionClient("l_arm_controller/joint_trajectory_action", JointTrajectoryAction)
-        self.r_gripper_client = actionlib.SimpleActionClient("r_gripper_controller/gripper_action", Pr2GripperCommandAction)        
-        self.l_gripper_client = actionlib.SimpleActionClient("l_gripper_controller/gripper_action", Pr2GripperCommandAction)
-        self.head_pointer_client = actionlib.SimpleActionClient("head_traj_controller/point_head_action", PointHeadAction)
-        self.head_client = rospy.Publisher('head_traj_controller/command', JointTrajectory, latch=True)
-        
-        self.r_arm_client.wait_for_server()
-        self.l_arm_client.wait_for_server()
-        self.r_gripper_client.wait_for_server()
-        self.l_gripper_client.wait_for_server()
-        self.head_pointer_client.wait_for_server()
-        
-        self.r_arm_client.cancel_all_goals()
-        self.l_arm_client.cancel_all_goals()
-        self.r_gripper_client.cancel_all_goals()
-        self.l_gripper_client.cancel_all_goals()
-        self.head_pointer_client.cancel_all_goals()
+        self.r_arm_client = self.robot_state.r_arm_client       
+        self.l_arm_client = self.robot_state.l_arm_client 
+        self.r_gripper_client = self.robot_state.r_gripper_client         
+        self.l_gripper_client = self.robot_state.l_gripper_client 
+        self.head_pointer_client = self.robot_state.head_pointer_client
+        self.head_client = self.robot_state.head_client
+        self.filter_service = self.robot_state.filter_service
         
         self.l_arm_done = False
         self.r_arm_done = False
@@ -364,6 +364,51 @@ class PR2JointMover(object):
         
         if wait:
             client.wait_for_result()
+            
+    def execute_trajectory(self, trajectory, arm, wait=False):
+        command = JointTrajectory()
+        command.joint_names = ['%s_shoulder_pan_joint' % arm[0], 
+                               '%s_shoulder_lift_joint' % arm[0],
+                               '%s_upper_arm_roll_joint' % arm[0],
+                               '%s_elbow_flex_joint' % arm[0],
+                               '%s_forearm_roll_joint' % arm[0],
+                               '%s_wrist_flex_joint' % arm[0],
+                               '%s_wrist_roll_joint' % arm[0]]
+        
+        if arm[0] == "l":
+            client = self.l_arm_client
+        elif arm[0] == "r":
+            client = self.r_arm_client
+            
+        for jvals in trajectory:
+            command.points.append(JointTrajectoryPoint(
+                                positions=jvals,
+                                velocities = [],
+                                accelerations = [],
+                                time_from_start =  rospy.Duration(0)))
+        #command.header.stamp = rospy.Time.now()
+
+        
+        rospy.loginfo("Sending request to trajectory filter")
+        req = FilterJointTrajectoryWithConstraintsRequest()
+        req.trajectory = command
+        req.allowed_time = rospy.Duration(1.)
+        reply = self.filter_service.call(req)
+        
+        if reply.error_code.val != reply.error_code.SUCCESS:
+            rospy.logerr("Filter trajectory returns %d"%reply.error_code.val)
+            return
+
+        goal = JointTrajectoryGoal()
+        goal.trajectory = reply.trajectory
+        
+        if arm[0] == "l":
+            client.send_goal(goal, done_cb=self.__l_arm_done_cb)       
+        elif arm[0] == "r":
+            client.send_goal(goal, done_cb=self.__r_arm_done_cb)
+        
+        if wait:
+            client.wait_for_result()
 
     def close_right_gripper(self, wait=False):
         self.set_gripper_state([0.025307], "r",wait)    
@@ -383,12 +428,13 @@ class PR2JointMover(object):
         elif gripper[0] == "r":
             client = self.r_gripper_client        
 
+        if not (type(jval) is list):
+            jval = [jval] 
+
         goal = Pr2GripperCommandGoal()
         goal.command.max_effort = -1
         goal.command.position = jval[0]
         
-        rospy.loginfo("Message: %s"%str(goal))
-#        rospy.loginfo("Sending command to %s" % gripper)
         if gripper[0] == "l":
             client.send_goal(goal, done_cb=self.__l_gripper_done_cb)
         
@@ -665,11 +711,66 @@ class PR2JointMover(object):
         f.write("\n")
         
         f.write("time: %f\n"% self.time_to_reach)
+
+class PosesSet(object):
+    '''
+    This class is used to execute a set of PR2JointMover in sequence. The variable
+    robot_state is a list of movers that will be executed in order.
+    '''
+    def __init__(self, state):
+        self.movers = []
+        self.robot_state = state
+        
+    def parse_bookmark_file(self, bfile):
+        '''
+        Parse a file with a sequence of joints previously saved by a @PR2JointMover. 
+        @param bfile: either a 
+        '''
+        if type(bfile) is str:
+            f = open(bfile,'r')
+        else:
+            f = bfile
+            
+        num_read = 0
+        while True:
+            newmover = PR2JointMover(self.robot_state)
+            go_on = newmover.parse_bookmark_file(f)
+            if not go_on:
+                rospy.loginfo("%d entries read"%num_read)
+                break
+            newmover.name = newmover.name.strip("\n")
+            num_read += 1           
+            self.movers.append(newmover)         
+    
+    def exec_all(self):
+        rospy.loginfo("Executing %d movers"%len(self.movers))
+        for mover in self.movers:
+            mover.execute_and_wait()
         
 if __name__ == "__main__":
+    import os
+    
     rospy.init_node('trytest', anonymous=True)
     state = RobotState()
-    mover = PR2JointMover(state)
-    mover.parse_bookmark_file("/home/pezzotto/ROS/rubiks_graph/RCube/dance2.pos")
-    mover.time_to_reach = 3
-    mover.execute_and_wait()
+    mover = PosesSet(state)
+    
+    mover.parse_bookmark_file("/home/pezzotto/PrepareCofee/get_the_powder.stack")
+    mover.parse_bookmark_file("/home/pezzotto/PrepareCofee/pour_kettle.stack")
+    mover.parse_bookmark_file("/home/pezzotto/PrepareCofee/stir.stack")
+    mover.exec_all()
+    
+    dance1_mover = PR2JointMover(state)
+    DIR = roslib.packages.get_pkg_dir("rubiks_graph", required=True) + "/RCube/"    
+    filename = os.path.join(DIR, "dance1"+".pos")
+    dance1_mover.parse_bookmark_file(filename)
+    dance1_mover.time_to_reach = 3
+    
+    dance2_mover = PR2JointMover(state)
+    filename = os.path.join(DIR, "dance2"+".pos")
+    dance2_mover.parse_bookmark_file(filename)
+    dance2_mover.time_to_reach = 3
+    
+    
+    dance1_mover.execute_and_wait()
+    dance2_mover.execute_and_wait()
+    dance2_mover.spin_wrists(10)

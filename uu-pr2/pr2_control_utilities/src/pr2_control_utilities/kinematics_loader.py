@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-PKG="pr2_pose_saver"
+PKG="pr2_control_utilities"
 import roslib; roslib.load_manifest(PKG)
 import rospy
 import tf

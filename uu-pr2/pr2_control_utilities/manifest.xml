@@ -1,10 +1,12 @@
 <package>
-  <description brief="pr2_control_utilities">
+  <description brief="Python classes to control/read the PR2 joints">
 
-     pr2_control_utilities
+     A set of convenient Python classes to read the values from the PR2 joints and 
+     execute actions. It supports storing a joints configuration on a file to be recalled later.
+     Reading joint values from cartesian coordinates using IK is also supported.  
 
   </description>
-  <author>Lorenzo Riano</author>
+  <author>Lorenzo Riano lorenzo.riano@gmail.com </author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/pr2_control_utilities</url>
@@ -17,6 +19,8 @@
   <depend package="actionlib_msgs"/>
   <depend package="kinematics_msgs"/>
   <depend package="tf"/>
+  <depend package="move_arm_msgs"/>
+  <depend package="interpolated_ik_motion_planner" />
 
 </package>
 
