@@ -66,7 +66,8 @@ class RosCommunication():
                 jtype = child.getAttribute('type')
                 if jtype == 'fixed':
                     continue
-                name = child.getAttribute('name')
+                # encoding needed for most lookups like "self.roscomms.joint_list[module]"
+                name = child.getAttribute('name').encode('ascii')
                 if jtype == 'continuous':
                     minval = -pi
                     maxval = pi
@@ -278,7 +279,7 @@ class SchunkTextControl:
         self.limitsStrings = []
         for i in range(0,self.numModules):
             self.pose.append(0)
-            moduleName = "Joint" + str(i)
+            moduleName = self.roscomms.joint_list[i]
             minLimit = self.roscomms.free_joints[moduleName]["min"]
             minLimit *= 180 / pi
             minLimit = int(minLimit) - 1
@@ -924,7 +925,7 @@ class SchunkTextControl:
                             if self.inDegrees:
                                 value = value * pi / 180
                             self.roscomms.targetPosition.name=[]
-                            self.roscomms.targetPosition.name.append("Joint"+str(module))
+                            self.roscomms.targetPosition.name.append(self.roscomms.joint_list[module])
                             self.roscomms.targetPosition.position = [value]
                             #print self.roscomms.targetPosition
                             self.roscomms.setPosition = True
@@ -934,7 +935,7 @@ class SchunkTextControl:
                         # move from spinbutton if tokens[2] not given
                         value = float(self.posesframe_spinButtons[module].get_value()) * pi / 180
                         self.roscomms.targetPosition.name=[]
-                        self.roscomms.targetPosition.name.append("Joint"+str(module)) 
+                        self.roscomms.targetPosition.name.append(self.roscomms.joint_list[module])
                         self.roscomms.targetPosition.position = [value]
                         #print self.roscomms.targetPosition
                         self.roscomms.setPosition = True 
@@ -953,7 +954,7 @@ class SchunkTextControl:
         self.roscomms.targetPosition.name=[]
         self.roscomms.targetPosition.position=[]
         for module in range(0,self.numModules):
-            name = "Joint" + str(module)
+            name = self.roscomms.joint_list[module]
             self.roscomms.targetPosition.name.append(name)
             value = float(self.posesframe_spinButtons[module].get_value())
             if self.inDegrees: # convert to radians, else it is already in radians
@@ -997,7 +998,7 @@ class SchunkTextControl:
         self.roscomms.targetVelocity.name=[]
         self.roscomms.targetVelocity.velocity=[]
         for module in range(0,self.numModules):
-            name = "Joint" + str(module)
+            name = self.roscomms.joint_list[module]
             self.roscomms.targetVelocity.name.append(name)
             value = 0.0
             self.roscomms.targetVelocity.velocity.append(value)
@@ -1026,7 +1027,7 @@ class SchunkTextControl:
                         try:
                             value = float(value) * pi / 180
                             self.roscomms.targetVelocity.name=[]
-                            self.roscomms.targetVelocity.name.append("Joint"+str(module))
+                            self.roscomms.targetPosition.name.append(self.roscomms.joint_list[module])
                             self.roscomms.targetVelocity.velocity = [value]
                             self.roscomms.setVelocity = True
                         except:
@@ -1035,7 +1036,7 @@ class SchunkTextControl:
                         # move from spinbutton if tokens[2] not given
                         value = float(self.velframe_spinButtons[module].get_value()) * pi / 180
                         self.roscomms.targetVelocity.name=[]
-                        self.roscomms.targetVelocity.name.append("Joint"+str(module)) 
+                        self.roscomms.targetPosition.name.append(self.roscomms.joint_list[module])
                         self.roscomms.targetVelocity.velocity = [value]
                         self.roscomms.setVelocity = True 
                 else:
@@ -1053,7 +1054,7 @@ class SchunkTextControl:
         self.roscomms.targetVelocity.name=[]
         self.roscomms.targetVelocity.velocity=[]
         for i in range(0,self.numModules):
-            name = "Joint" + str(i)
+            name = self.roscomms.joint_list[i]
             self.roscomms.targetVelocity.name.append(name)
             value = float(self.velframe_spinButtons[i].get_value()) * pi / 180
             self.roscomms.targetVelocity.velocity.append(value)
